@@ -13,7 +13,7 @@ class Body
 	std::vector<double> position;// 3d coordinates relative to 0,0,0 <m>
 	std::vector<double> velocity;// movement in 3d space relative to the static frame of reference of the world. <m/s>
 	
-
+	
 
 
 
