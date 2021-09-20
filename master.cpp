@@ -15,7 +15,7 @@ public:
 	{
 
 	}
-	void Load_World()
+	void Load_World(char* path, char* file)
 	{
 
 	}
