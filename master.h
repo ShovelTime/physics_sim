@@ -3,7 +3,7 @@
 #include <filesystem>
 
 // MASTER SUBSYSTEM
-// controls the flow of the entire simulation, and is the main loop of the program.
+// controls the flow of the entire simulation, and is responsible for the main loop of the program.
 
 class Master_subsys
 {
