@@ -1,12 +1,12 @@
 #include <iostream>
 #include <vector>
+#pragma once
 //#include "../const.h"
 
 // EVERY RELEVANT DATA SHOULD BE FORMATTED IN THEIR SI UNITS WHENEVER POSSIBLE.
 // this class represents any object that can be affected or interacted with by the physics engine
 class Body
 {
-	// ints should be changed to floating point types for better accuracy
 	char name[128];
 	float radius; //m
 	double mass; //kg

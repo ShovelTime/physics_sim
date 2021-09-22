@@ -1,19 +1,54 @@
-// physics_sim.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
+#include <string>
+#include <filesystem>
 #include <cmath>
+#include <sstream>
 #include "const.h"
 #include <GLFW/glfw3.h>
+#include <nlohmann/json.hpp>
+#include "master.h"
 
-int main()
+int main(int argc, char* argv[])
 {
+    std::filesystem::path filepath = std::filesystem::current_path() / "C:WorldData";
+    //std::array<char, 256> file;
+    
+    std::string file;
+    
+    std::string defaultfile = "Sol.json";
+    /*
     if(!glfwInit())
     {
         return -1;
     }
+    */
 
-    std::cout << "Hello World!\n";
+    std::cout << argc << "\n";
+    std::cout << argv[0] << "\n";
+
+    if (argc > 1) {
+
+        //strcpy_s(argv[1], 256, file);
+        file = argv[1];
+
+    }
+    else
+    {
+
+        // load the Sol system by default if no arguments are provided.
+        //strcpy_s(defaultfile.data(), 256, file);
+        file = defaultfile;
+        //file = "Sol.json";
+
+    }
+    std::cout << filepath;
+    Master_subsys Master;
+    Master.Init(filepath.string().data(), file);
+    
+    // Create the Master Subsystem
+    //master_s
+
+
     /*
     GLFWwindow* window = glfwCreateWindow(640, 480, "My Title", NULL, NULL);
     if (!window)
@@ -22,19 +57,19 @@ int main()
         return -1;
     }
     glfwMakeContextCurrent(window);
-     
+
     while (!glfwWindowShouldClose(window))
     {
-                
+
         glClear(GL_COLOR_BUFFER_BIT);
 
-         
+
         glfwSwapBuffers(window);
 
-        
+
         glfwPollEvents();
     }
-    
+
     std::cout << window;
     glfwTerminate();
     */
