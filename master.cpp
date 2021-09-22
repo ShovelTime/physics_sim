@@ -1,12 +1,13 @@
 #include "phys/world.h"
 #include "master.h"
 #include <nlohmann/json.hpp>
+#include <string.h>
 #include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <Windows.h>
 
-
+using nlohmann::json;
 // MASTER SUBSYSTEM
 // controls the flow of the entire simulation, and is the main loop of the program.
 
@@ -28,33 +29,24 @@
 	}
 	int Master_subsys::Load_World_Data(std::filesystem::path path, std::string file)
 	{
-		
-		std::filesystem::current_path(path);
-		nlohmann::json jparser;
-		std::ifstream input_stream;
-		input_stream.open(file, std::ifstream::in);
-		std::stringstream output;
-		if (input_stream.is_open()) {
-			std::cout << "file opened! \n";
-		}
-		else
+		std::ifstream input_stream(path / file);
+		if(input_stream.is_open())
 		{
-			std::cerr << "File Failed to open! \n";
-			throw std::invalid_argument(file);
+			try {
+				json jparser = nlohmann::json{}.parse(input_stream);
+				std::string name = jparser.at("World").at(0).at("name").get<std::string>();
+				
+
+			}
+			catch (nlohmann::json::exception ex)
+			{
+				std::cout << "Json Error!" << std::endl << ex.what() << std::endl;
+			}
 		}
-		try
-		{
-			jparser = jparser.parse(input_stream);
-			std::cout << "Success!";
-		}
-		catch (nlohmann::json::parse_error& ex)
-		{
-			std::cerr << "parse error at byte " << ex.byte << std::endl;
-		}
-		std::string name = jparser["name"];
-		World.Create_World(name, jparser["Bodies"]);
-		input_stream.close();
-		return 1;// oh god oh fuck
+
+
+		return 1; 
+
 	}
 
 
