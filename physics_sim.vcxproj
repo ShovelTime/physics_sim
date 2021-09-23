@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="phys\bodies.cpp" />
+    <ClCompile Include="phys\math\matrix.cpp" />
     <ClCompile Include="phys\world.cpp" />
     <ClCompile Include="master.cpp" />
   </ItemGroup>
@@ -172,6 +173,7 @@
     <ClInclude Include="const.h" />
     <ClInclude Include="master.h" />
     <ClInclude Include="phys\bodies.h" />
+    <ClInclude Include="phys\math\matrix.h" />
     <ClInclude Include="phys\world.h" />
   </ItemGroup>
   <ItemGroup>
