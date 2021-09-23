@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <cmath>
 #include <sstream>
-#include "const.h"
 #include <GLFW/glfw3.h>
 #include <nlohmann/json.hpp>
 #include "master.h"
