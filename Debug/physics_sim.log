@@ -1,9 +1,0 @@
-﻿  main.cpp
-  bodies.cpp
-C:\Users\19erlind\Dropbox\Gymnasiearbete\physics_sim\phys\bodies.cpp(1,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-  world.cpp
-  master.cpp
-  Generating Code...
-main.obj : error LNK2019: unresolved external symbol _glfwCreateWindow referenced in function _main
-C:\Users\19erlind\Dropbox\Gymnasiearbete\physics_sim\deps\lib\glfw3.lib : warning LNK4272: library machine type 'x64' conflicts with target machine type 'x86'
-C:\Users\19erlind\Dropbox\Gymnasiearbete\physics_sim\Debug\physics_sim.exe : fatal error LNK1120: 1 unresolved externals
