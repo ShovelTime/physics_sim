@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
         file = defaultfile;
 
     }
-    Master_subsys Master;
+    Master_sys Master;
     Master.Init(filepath.string().data(), file);
 
 

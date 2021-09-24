@@ -2,6 +2,7 @@
   "World": [
     {
       "name": "Solar System",
+      "date": "2000-01-01",
       "Bodies": [
         {
 

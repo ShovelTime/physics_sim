@@ -12,10 +12,10 @@ World_subsys::World_subsys()
 {
 
 }
-int World_subsys::Create_World(std::string name, nlohmann::json BodyList) 
+int World_subsys::Create_World(std::string name, std::vector<Body> BodyList)
 {
 	WorldName = name;
-	std::cout << BodyList.dump();
+	EntityList = BodyList;
 	return 1;
 
 
