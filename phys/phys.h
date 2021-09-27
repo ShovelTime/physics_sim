@@ -34,7 +34,7 @@ namespace phys
 
 		for (int i = 0; i < 3; i++)
 		{
-			unit_vec[i] = pow(unit_vec[i], 3);
+			unit_vec[i] = unit_vec[i] * unit_vec[i] * unit_vec[i];
 		}
 		return vec::vec_scalar_mult(vec::vec_divide(dist, unit_vec), first_arg);
 

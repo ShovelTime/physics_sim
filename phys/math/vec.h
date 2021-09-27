@@ -24,7 +24,8 @@ namespace vec {
 	}
 	std::vector<double> vec3_normalise(std::vector<double> vec_in)
 	{
-		double vec_len = (1 / sqrt(pow(vec_in[0], 2) + pow(vec_in[1], 2) + pow(vec_in[2], 2))); // is there a better way of doing this? though this avoids having to do a division for every iterations in the for loop.
+
+		double vec_len = (1 / sqrt((vec_in[0] * vec_in[0]) + ( vec_in[1]* vec_in[1]) + (vec_in[2] * vec_in[2]))); // is there a better way of doing this? though this avoids having to do a division for every iterations in the for loop(which saves some performances).
 		for (int i = 0; i < vec_in.size(); i++)
 		{
 			vec_in[i] = vec_in[i] * vec_len;
@@ -52,6 +53,7 @@ namespace vec {
 
 	std::vector<double> vec_divide(std::vector<double> vec_1, std::vector<double> vec_2) 
 	{
+
 		for (int i = 0; i < vec_1.size(); i++)
 		{
 			vec_1[i] /= vec_2[i];
@@ -86,9 +88,10 @@ namespace vec {
 	}
 	std::vector<double> vec_scalar_divide(std::vector<double> vec_in, double scalar)
 	{
+		double div = 1 / scalar;
 		for (int i = 0; i < vec_in.size(); i++)
 		{
-			vec_in[i] /= scalar;
+			vec_in[i] *= div;
 		}
 		return vec_in;
 	}
