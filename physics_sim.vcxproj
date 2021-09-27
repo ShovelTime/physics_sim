@@ -168,16 +168,24 @@
     <ClCompile Include="phys\math\matrix.cpp" />
     <ClCompile Include="phys\world.cpp" />
     <ClCompile Include="master.cpp" />
+    <ClCompile Include="Render\Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="const.h" />
+    <ClInclude Include="phys\math\const.h" />
     <ClInclude Include="master.h" />
     <ClInclude Include="phys\bodies.h" />
     <ClInclude Include="phys\math\matrix.h" />
+    <ClInclude Include="phys\phys.h" />
     <ClInclude Include="phys\world.h" />
+    <ClInclude Include="Render\Renderer.h" />
+    <ClInclude Include="phys\math\vec.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="WorldData\Sol.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="physics_sim.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,11 +1,13 @@
 #include "phys/world.h"
 #include "phys/bodies.h"
+#include "phys/phys.h"
 #include "master.h"
 #include <nlohmann/json.hpp>
 #include <string.h>
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <future>
 #include <Windows.h>
 
 using nlohmann::json;
@@ -21,15 +23,20 @@ using nlohmann::json;
 	 
 	Master_sys::Master_sys() 
 	{
+	}
+	void Parse_Date(std::string date) 
+	{
 
 	}
-
 	void Master_sys::Init(std::filesystem::path path, std::string file)
 	{
 		if (!Load_World_Data(path, file)){
 
 		}
+		worldloaded = true;
 		std::cout << "Init Complete" << std::endl;
+		std::cout << phys::get_distance_num(World.GetEntities()[0].position, World.GetEntities()[2].position) << " km";
+		return;
 		Loop();
 
 
@@ -44,11 +51,12 @@ using nlohmann::json;
 				json jparser = nlohmann::json{}.parse(input_stream);
 				std::string name = jparser.at("World").at(0).at("name").get<std::string>();
 				json bodyparser = jparser.at("World").at(0).at("Bodies");
-
+				std::string date = jparser.at("World").at(0).at("date").get<std::string>();
+				Parse_Date(date);
 				std::vector<Body> Bodies;
 
 				
-				for (size_t i = 0; i < bodyparser.size(); ++i) //Parse Body data into Objects
+				for (int i = 0; i < bodyparser.size(); ++i) //Parse Body data into Objects
 				{
 					std::cout << i << std::endl;
 					Bodies.push_back(
@@ -60,9 +68,14 @@ using nlohmann::json;
 						bodyparser.at(i).at("velocity").get<std::vector<double>>()
 						)
 					);
-					if (Bodies.back().mass < 0.0|| Bodies.back().radius < 0.0) 
+					Body res = Bodies.back();
+					if (res.mass < 0.0 || res.radius < 0.0) 
 					{
 						throw std::invalid_argument("Body nr " + std::to_string((Bodies.size() - 1)) + "; Mass or Radius should not be Negative!\n Name: "+ Bodies.back().name +"\n Mass: " + std::to_string(Bodies.back().mass) + "\n Radius: " + std::to_string(Bodies.back().radius));
+					}
+					if (res.velocity.size() != 3 || res.position.size() != 3)
+					{
+						throw std::invalid_argument("Body nr " + std::to_string((Bodies.size() - 1)) + "; Position or velocity vector has wrong size! " + Bodies.back().name + "\n position size: " + std::to_string(Bodies.back().position.size()) + "\n velocity size: " + std::to_string(Bodies.back().velocity.size()));
 					}
 				}
 				if (World.Create_World(name, Bodies)) {
@@ -93,11 +106,19 @@ using nlohmann::json;
 		return 1; 
 
 	}
-	int Master_sys::Loop() // every subsystem will call a Process function.
+	int Master_sys::Loop()
 	{
+		while (true) // replace true with user controlled argument
+		{
+			
+			simticks++;
+			
+			World.Process(time_step, time_mult);
+
+			//Renderer.Process
 
 
-		return -1; // oh god oh fuck
+		}
 	}
 
 

@@ -11,9 +11,9 @@ class Master_sys
 
 	tm sim_time; //time in the simulation starting 
 	World_subsys World;	
+	int simticks = 0; // ticks since simulation start.
 	float time_mult = 1.0f; // used to slow down or speed up simulation.
 	float time_step = 0.02f; //time that should pass per tick. The tick rate should preferrable be synced to this time.
-	float tick_rate = time_step; // starts at timestep, can be slowed down if calculation takes too long.
 	bool worldloaded = false; // Did the World load successfully?
 
 public:

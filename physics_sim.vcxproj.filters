@@ -30,9 +30,15 @@
     <ClCompile Include="master.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="phys\math\matrix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="const.h">
+    <ClInclude Include="phys\math\const.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="phys\bodies.h">
@@ -44,8 +50,28 @@
     <ClInclude Include="master.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="phys\math\matrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="phys\math\vec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="phys\phys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="WorldData\Sol.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="physics_sim.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

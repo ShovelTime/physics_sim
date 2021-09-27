@@ -16,5 +16,7 @@ class World_subsys
 public:
 	World_subsys();
 	int Create_World(std::string name, std::vector<Body> BodyList);
-	void Process();
+	void Process(float tstep, float tmult);
+	std::vector<Body> GetEntities();
+
 };
