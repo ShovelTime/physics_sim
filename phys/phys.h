@@ -6,6 +6,12 @@
 namespace phys
 {
 
+	struct uppdtpkg // container holding the new velocity and position of a body to be applied after the physics calculation stage.
+	{
+		std::vector<double> new_pos;
+		std::vector<double> new_vel;
+	};
+
 	std::vector<double> get_distance_vec(std::vector<double> loca, std::vector<double> locb)
 	{
 		return vec::vec_substract(loca, locb);
@@ -29,7 +35,20 @@ namespace phys
 	std::vector<double> get_acceleration_vec(Body orig, Body tgt)
 	{
 		double first_arg = gravity_constant * tgt.mass;
-		auto dist = vec::vec_substract(tgt.position, orig.position);
+		auto dist = get_distance_vec(tgt.position, orig.position);
+		auto unit_vec = get_direction(dist);
+
+		for (int i = 0; i < 3; i++)
+		{
+			unit_vec[i] = unit_vec[i] * unit_vec[i] * unit_vec[i];
+		}
+		return vec::vec_scalar_mult(vec::vec_divide(dist, unit_vec), first_arg);
+
+	}
+	std::vector<double> get_acceleration_vec(std::vector<double> pos, Body tgt)
+	{
+		double first_arg = gravity_constant * tgt.mass;
+		auto dist = get_distance_vec(tgt.position, pos);
 		auto unit_vec = get_direction(dist);
 
 		for (int i = 0; i < 3; i++)
