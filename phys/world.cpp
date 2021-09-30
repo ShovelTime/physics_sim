@@ -32,11 +32,12 @@ void World_subsys::Process(float tstep, float tmult)
 		phys::uppdtpkg& currpkg = Pending.back();
 		// implement Verlet Vector integration
 
-			std::vector<double> accel = phys::get_acceleration_vec(EntityList[iter], EntityList[iter2]);
+			//std::vector<double> accel = phys::get_acceleration_vec(EntityList[iter], EntityList[iter2]);
+		Calc_Acceleration(iter, lsize);
 
 			
 
-		}
+		
 	}
 }
 std::vector<Body> World_subsys::Get_Entities()
@@ -47,8 +48,10 @@ std::string World_subsys::Get_Name()
 {
 	return WorldName;
 }
-std::vector<double> World_subsys::Calc_Acceleration(int iter)
+std::vector<double> World_subsys::Calc_Acceleration(int iter, int lsize)
 {
+	std::vector<double> accel{ 0, 0, 0 };
+	
 	for (int iter2 = 0; iter2 < lsize; iter2++)
 	{
 		if (iter2 == iter) // the body shouldnt affect itself
@@ -56,4 +59,7 @@ std::vector<double> World_subsys::Calc_Acceleration(int iter)
 			continue;
 
 		}
+		vec::vec_add(accel, phys::get_acceleration_vec(EntityList[iter], EntityList[iter2]));
+	}
+
 }

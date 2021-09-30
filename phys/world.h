@@ -15,7 +15,7 @@ class World_subsys
 	std::vector<Body> EntityList; // list of all physical entities in the World;
 	std::vector<phys::uppdtpkg> Pending; // list of updated vectors to apply to entities at the end of Process()
 	//camera Camera; 
-	std::vector<double> Calc_Acceleration(int iter);
+	std::vector<double> Calc_Acceleration(int iter,int lsize);
 public:
 	World_subsys();
 	int Create_World(std::string name, std::vector<Body> BodyList);

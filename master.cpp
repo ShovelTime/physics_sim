@@ -35,7 +35,7 @@ using nlohmann::json;
 		}
 		worldloaded = true;
 		std::cout << "Init Complete" << std::endl;
-		std::cout << phys::get_distance_num(World.GetEntities()[0].position, World.GetEntities()[2].position) << " km";
+		std::cout << phys::get_distance_num(World.Get_Entities()[0].position, World.Get_Entities()[2].position) << " km";
 		return;
 		Loop();
 
