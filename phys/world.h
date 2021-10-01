@@ -1,4 +1,7 @@
-#pragma once
+#ifndef WORLD_H
+#define WORLD_H
+
+
 #include <iostream>
 #include <vector>
 #include "Bodies.h"
@@ -16,6 +19,7 @@ class World_subsys
 	std::vector<phys::uppdtpkg> Pending; // list of updated vectors to apply to entities at the end of Process()
 	//camera Camera; 
 	std::vector<double> Calc_Acceleration(int iter,int lsize);
+	std::vector<double> Calc_Acceleration(int iter, int lsize, std::vector<double> pos_2);
 public:
 	World_subsys();
 	int Create_World(std::string name, std::vector<Body> BodyList);
@@ -23,3 +27,4 @@ public:
 	std::vector<Body> Get_Entities();
 	std::string Get_Name();
 };
+#endif // !WORLD_H

@@ -1,7 +1,15 @@
-#pragma once
+#include "phys/bodies.h"
+#include "phys/phys.h"
+#include <nlohmann/json.hpp>
+#include <string.h>
+#include <iostream>
+#include <fstream>
+#include <future>
+#include <Windows.h>
 #include "phys/world.h"
 #include <filesystem>
 #include <ctime>
+#include <chrono>
 
 // MASTER SYSTEM
 // controls the flow of the entire simulation, and is responsible for the main loop of the program.

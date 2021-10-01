@@ -1,10 +1,6 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
-#include <cmath>
-#include <sstream>
-#include <GLFW/glfw3.h>
-#include <nlohmann/json.hpp>
 #include "master.h"
 
 int main(int argc, char* argv[])

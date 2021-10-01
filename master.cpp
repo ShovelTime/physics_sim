@@ -1,14 +1,4 @@
-#include "phys/world.h"
-#include "phys/bodies.h"
-#include "phys/phys.h"
 #include "master.h"
-#include <nlohmann/json.hpp>
-#include <string.h>
-#include <filesystem>
-#include <iostream>
-#include <fstream>
-#include <future>
-#include <Windows.h>
 
 using nlohmann::json;
 // MASTER SYSTEM
@@ -35,8 +25,7 @@ using nlohmann::json;
 		}
 		worldloaded = true;
 		std::cout << "Init Complete" << std::endl;
-		std::cout << phys::get_distance_num(World.Get_Entities()[0].position, World.Get_Entities()[2].position) << " km";
-		return;
+		std::cout << phys::get_distance_num(World.Get_Entities()[0].position, World.Get_Entities()[2].position) << " km" << std::endl;
 		Loop();
 
 
@@ -110,10 +99,14 @@ using nlohmann::json;
 	{
 		while (true) // replace true with user controlled argument
 		{
-			
+			auto startime = std::chrono::high_resolution_clock::now();
 			simticks++;
 			
 			World.Process(time_step, time_mult);
+			auto stoptime = std::chrono::high_resolution_clock::now();
+			std::cout << std::chrono::duration_cast<std::chrono::microseconds>(stoptime - startime).count() << " microseconds" << std::endl;
+			return 1;
+
 
 			//Renderer.Process
 

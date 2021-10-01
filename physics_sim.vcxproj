@@ -166,6 +166,8 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="phys\bodies.cpp" />
     <ClCompile Include="phys\math\matrix.cpp" />
+    <ClCompile Include="phys\math\vec.cpp" />
+    <ClCompile Include="phys\phys.cpp" />
     <ClCompile Include="phys\world.cpp" />
     <ClCompile Include="master.cpp" />
     <ClCompile Include="Render\Renderer.cpp" />

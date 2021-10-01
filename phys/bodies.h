@@ -1,6 +1,7 @@
+#ifndef BODY_H
+#define BODY_H
 #include <iostream>
 #include <vector>
-#pragma once
 //#include "../const.h"
 
 // EVERY RELEVANT DATA SHOULD BE FORMATTED IN THEIR SI UNITS WHENEVER POSSIBLE.
@@ -20,3 +21,4 @@ public:
 
 
 };
+#endif
