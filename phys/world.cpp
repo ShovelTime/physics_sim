@@ -53,6 +53,7 @@ void World_subsys::Process(float tstep, float tmult)
 		EntityList[iter].position = Pending[iter].new_pos;
 		EntityList[iter].velocity = Pending[iter].new_vel;
 	}
+	Pending.clear();
 
 	
 }

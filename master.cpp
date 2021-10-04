@@ -97,21 +97,40 @@ using nlohmann::json;
 	}
 	int Master_sys::Loop()
 	{
-		while (true) // replace true with user controlled argument
+		auto startime = std::chrono::high_resolution_clock::now();
+		std::cout << "Simulating..." << std::endl;
+		while (simticks < 8766) // replace true with user or simulation controlled argument
 		{
-			auto startime = std::chrono::high_resolution_clock::now();
-			simticks++;
+ 			simticks++;
 			
 			World.Process(time_step, time_mult);
-			auto stoptime = std::chrono::high_resolution_clock::now();
-			std::cout << std::chrono::duration_cast<std::chrono::microseconds>(stoptime - startime).count() << " microseconds" << std::endl;
-			return 1;
+			
 
 
 			//Renderer.Process
 
 
 		}
+		auto EntList = World.Get_Entities();
+		for (int i = 0; i < EntList.size(); i++)
+		{
+			std::cout << EntList[i].name << "'s location:" << std::endl;
+			for (int iter = 0; iter < 3; iter++)
+			{
+				std::cout << EntList[i].position[iter] << std::endl;
+			}
+			std::cout << "velocity: " << std::endl;
+			for (int iter = 0; iter < 3; iter++)
+			{
+				std::cout << EntList[i].velocity[iter] << std::endl;
+			}
+			std::cout << std::endl << std::endl;
+		}
+
+		
+		auto stoptime = std::chrono::high_resolution_clock::now();
+		std::cout << std::chrono::duration_cast<std::chrono::microseconds>(stoptime - startime).count() << " microseconds" << std::endl;
+		return 1;
 	}
 
 
