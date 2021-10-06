@@ -6,6 +6,9 @@
 #include <cmath>
 
 std::vector<double> operator+(const std::vector<double>& vec_1, const std::vector<double>& vec_2);
+std::vector<double> operator/(const std::vector<double>& vec_1, const std::vector<double>& vec_2);
+std::vector<double> operator/(const std::vector<double>& vec_1, const double scalar);
+
 
 namespace vec {
 

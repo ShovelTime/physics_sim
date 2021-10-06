@@ -12,6 +12,11 @@ namespace phys
 		auto dist = vec::vec_substract(loca, locb);
 		return sqrt(pow(dist[0], 2) + pow(dist[1], 2) + pow(dist[2], 2));
 	}
+	double get_distance_num(std::vector<double> in)
+	{
+		
+		return sqrt(pow(in[0], 2) + pow(in[1], 2) + pow(in[2], 2));
+	}
 	std::vector<double> get_direction(std::vector<double> loca, std::vector<double> locb)
 	{
 		std::vector<double> dist = get_distance_vec(loca, locb);
@@ -25,26 +30,21 @@ namespace phys
 	{
 		double first_arg = gravity_constant * tgt.mass;
 		auto dist = get_distance_vec(tgt.position, orig.position);
-		auto unit_vec = get_direction(dist);
+		double mag = get_distance_num(dist);
 
-		for (int i = 0; i < 3; i++)
-		{
-			unit_vec[i] = unit_vec[i] * unit_vec[i] * unit_vec[i];
-		}
-		return vec::vec_scalar_mult(vec::vec_divide(dist, unit_vec), first_arg);
+		mag = mag * mag * mag;
+		return vec::vec_scalar_divide(vec::vec_scalar_mult(dist, first_arg), mag);
 
 	}
 	std::vector<double> get_acceleration_vec(std::vector<double> pos, Body tgt)
 	{
+
 		double first_arg = gravity_constant * tgt.mass;
 		auto dist = get_distance_vec(tgt.position, pos);
-		auto unit_vec = get_direction(dist);
+		double mag = get_distance_num(dist);
 
-		for (int i = 0; i < 3; i++)
-		{
-			unit_vec[i] = unit_vec[i] * unit_vec[i] * unit_vec[i];
-		}
-		return vec::vec_scalar_mult(vec::vec_divide(dist, unit_vec), first_arg);
+		mag = mag * mag * mag;
+		return vec::vec_scalar_divide(vec::vec_scalar_mult(dist, first_arg), mag);
 
 	}
 }

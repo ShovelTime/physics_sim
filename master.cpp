@@ -99,7 +99,7 @@ using nlohmann::json;
 	{
 		auto startime = std::chrono::high_resolution_clock::now();
 		std::cout << "Simulating..." << std::endl;
-		while (simticks < 8766) // replace true with user or simulation controlled argument
+		while (simticks < 989280) // replace true with user or simulation controlled argument
 		{
  			simticks++;
 			

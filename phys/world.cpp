@@ -33,6 +33,8 @@ void World_subsys::Process(float tstep, float tmult)
 ;
 		std::vector<double> accel1 = Calc_Acceleration(iter, lsize);
 
+		currpkg.name = sel.name;
+
 		currpkg.new_pos = sel.position + vec::vec_scalar_mult(sel.velocity, time_increment) + vec::vec_scalar_mult(vec::vec_scalar_mult(accel1, 0.5), (time_increment * time_increment));
 
 		std::vector<double> accel2 = Calc_Acceleration(iter, lsize, currpkg.new_pos);
@@ -76,7 +78,7 @@ std::vector<double> World_subsys::Calc_Acceleration(int iter, int lsize)
 			continue;
 
 		}
-		vec::vec_add(accel, phys::get_acceleration_vec(EntityList[iter], EntityList[iter2]));
+		accel = vec::vec_add(accel, phys::get_acceleration_vec(EntityList[iter], EntityList[iter2]));
 
 	}
 	return accel;
@@ -93,7 +95,7 @@ std::vector<double> World_subsys::Calc_Acceleration(int iter, int lsize, std::ve
 			continue;
 
 		}
-		vec::vec_add(accel, phys::get_acceleration_vec(pos_2, EntityList[iter2]));
+		accel = vec::vec_add(accel, phys::get_acceleration_vec(pos_2, EntityList[iter2]));
 
 	}
 	return accel;

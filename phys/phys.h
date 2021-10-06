@@ -12,6 +12,7 @@ namespace phys
 
 	struct uppdtpkg // container holding the new velocity and position of a body to be applied after the physics calculation stage.
 	{
+		std::string name;
 		std::vector<double> new_pos;
 		std::vector<double> new_vel;
 	};

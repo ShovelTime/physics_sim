@@ -9,6 +9,25 @@ std::vector<double> operator+(const std::vector<double>& vec_1, const std::vecto
 	}
 	return ret;
 }
+std::vector<double> operator/(const std::vector<double>& vec_1, const std::vector<double>& vec_2)
+{
+	std::vector<double> ret{ 0,0,0 };
+	for (int i = 0; i < vec_1.size(); i++)
+	{
+		ret[i] = vec_1[i] / vec_2[i];
+	}
+	return ret;
+}
+std::vector<double> operator/(const std::vector<double>& vec_1, const double scalar)
+{
+	std::vector<double> ret{ 0,0,0 };
+	double div = 1 / scalar;
+	for (int i = 0; i < vec_1.size(); i++)
+	{
+		ret[i] = vec_1[i] * div;
+	}
+	return ret;
+}
 
 namespace vec
 {
