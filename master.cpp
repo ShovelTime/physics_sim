@@ -26,6 +26,7 @@ using nlohmann::json;
 		worldloaded = true;
 		std::cout << "Init Complete" << std::endl;
 		std::cout << phys::get_distance_num(World.Get_Entities()[0].position, World.Get_Entities()[2].position) << " km" << std::endl;
+		std::cout << phys::get_distance_num(World.Get_Entities()[4].position, World.Get_Entities()[3].position) << " km" << std::endl;
 		Loop();
 
 
@@ -127,7 +128,7 @@ using nlohmann::json;
 			std::cout << std::endl << std::endl;
 		}
 
-		
+		std::cout << phys::get_distance_num(EntList[4].position, EntList[3].position) << std::endl;
 		auto stoptime = std::chrono::high_resolution_clock::now();
 		std::cout << std::chrono::duration_cast<std::chrono::microseconds>(stoptime - startime).count() << " microseconds" << std::endl;
 		return 1;
