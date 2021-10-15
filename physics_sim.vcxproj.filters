@@ -42,6 +42,9 @@
     <ClCompile Include="phys\math\vec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="deps\include\olc\olcPixelGameEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="phys\math\const.h">
@@ -69,6 +72,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="phys\phys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="deps\include\olc\olcPixelGameEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

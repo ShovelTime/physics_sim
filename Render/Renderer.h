@@ -1,16 +1,17 @@
 #pragma once
 #include <vector>
-class Renderer
-{
-	Renderer() 
-	{
-		
-	}
-public:
-	int Init()
-	{
+#include "olc/olcPixelGameEngine.h"
 
-	}
+
+class Renderer : public olc::PixelGameEngine
+{
+public:
+
+	Renderer();
+	bool OnUserCreate() override;
+	bool OnUserUpdate(float fElapsedTime) override;
+public:
+	int Init();
 	void Render(std::vector<std::vector<double>> realspace_coords)
 	{
 

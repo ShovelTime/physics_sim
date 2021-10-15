@@ -10,7 +10,7 @@
 #include <filesystem>
 #include <ctime>
 #include <chrono>
-
+#include "Render/Renderer.h"
 // MASTER SYSTEM
 // controls the flow of the entire simulation, and is responsible for the main loop of the program.
 
@@ -19,6 +19,7 @@ class Master_sys
 
 	tm sim_time; //time in the simulation starting 
 	World_subsys World;	
+	Renderer render;
 	int simticks = 0; // ticks since simulation start.
 	float time_mult = 60.0f; // used to slow down or speed up simulation.
 	float time_step = 1.0f; //time in seconds that should pass per tick. The tick rate should preferrable be synced to this time.

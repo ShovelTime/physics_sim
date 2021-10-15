@@ -16,14 +16,23 @@ using nlohmann::json;
 	}
 	void Parse_Date(std::string date) 
 	{
-
+	}
+	void Init_Renderer(Renderer *renderer)
+	{
+		renderer->Init();
 	}
 	void Master_sys::Init(std::filesystem::path path, std::string file)
 	{
 		if (!Load_World_Data(path, file)){
 
 		}
+		void(*foo)(Renderer*);
+		foo = Init_Renderer;
+
+		Renderer renderer;
+		std::async(std::launch::async, foo , &renderer);
 		worldloaded = true;
+
 		std::cout << "Init Complete" << std::endl;
 		std::cout << phys::get_distance_num(World.Get_Entities()[0].position, World.Get_Entities()[2].position) << " km" << std::endl;
 		std::cout << phys::get_distance_num(World.Get_Entities()[4].position, World.Get_Entities()[3].position) << " km" << std::endl;

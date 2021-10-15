@@ -163,6 +163,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="deps\include\olc\olcPixelGameEngine.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="phys\bodies.cpp" />
     <ClCompile Include="phys\math\matrix.cpp" />
@@ -173,6 +174,7 @@
     <ClCompile Include="Render\Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="deps\include\olc\olcPixelGameEngine.h" />
     <ClInclude Include="phys\math\const.h" />
     <ClInclude Include="master.h" />
     <ClInclude Include="phys\bodies.h" />
