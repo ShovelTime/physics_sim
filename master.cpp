@@ -1,22 +1,66 @@
+#define OLC_PGE_APPLICATION
+#include "olc/olcPixelGameEngine.h"
 #include "master.h"
 
 using nlohmann::json;
 // MASTER SYSTEM
 // controls the flow of the entire simulation, and is the main loop of the program.
+class Renderer : public olc::PixelGameEngine
+{
+public:
+	olc::vf2d center;
+	Renderer()
+	{
+		sAppName = "Physics Sim";
+	}
+	bool OnUserCreate() override
+	{
+		center = {(float)ScreenWidth() / 2, (float)ScreenHeight() / 2 };
+		std::cout << center << std::endl;
+		return true;
+	}
+	bool OnUserUpdate(float fElapsedTime) override
+	{
+		// Erase previous frame
+		Clear(olc::DARK_BLUE);
 
+		// Draw Boundary
+		DrawLine(10, 10, 502, 10, olc::YELLOW);
+		DrawLine(10, 10, 10, 470, olc::YELLOW);
+		DrawLine(502, 10, 502, 470, olc::YELLOW);
+		DrawLine(10, 470, 502, 470, olc::YELLOW);
+		DrawCircle(center, 100, olc::CYAN);
+		return true;
+	}
+public:
+	int Init()
+	{
+		if (Construct(512, 480, 2, 2))
+		{
+			Start();
+		}
+		return 0;
+	}
+	void Get_Data(std::vector<std::vector<double>> realspace_coords)
+	{
+
+	}
+
+};
 /*
 	World_subsysWorld;
 	float timemult = 1.0f; // used to slow down or speed up simulation, 1.0 is real-time.
 	float timestep = 0.02f; //real-time that should pass per tick. The tick rate should preferrable be synced to this time.
 	float tickrate = timestep; // starts at timestep, can be slowed down if calculation takes too long.
 	*/
-	 
+	
 	Master_sys::Master_sys() 
 	{
 	}
 	void Parse_Date(std::string date) 
 	{
 	}
+
 	void Init_Renderer(Renderer *renderer)
 	{
 		renderer->Init();
@@ -30,7 +74,7 @@ using nlohmann::json;
 		foo = Init_Renderer;
 
 		Renderer renderer;
-		std::async(std::launch::async, foo , &renderer);
+		auto whatlefuhque = std::async(std::launch::async, foo , &renderer);
 		worldloaded = true;
 
 		std::cout << "Init Complete" << std::endl;
@@ -109,7 +153,7 @@ using nlohmann::json;
 	{
 		auto startime = std::chrono::high_resolution_clock::now();
 		std::cout << "Simulating..." << std::endl;
-		while (simticks < 989280) // replace true with user or simulation controlled argument
+		while (simticks < 98928) // replace true with user or simulation controlled argument
 		{
  			simticks++;
 			

@@ -1,4 +1,6 @@
 #pragma once
+/*
+#define OLC_PGE_APPLICATION
 #include <vector>
 #include "olc/olcPixelGameEngine.h"
 
@@ -18,4 +20,4 @@ public:
 	}
 	
 };
-
+*/
