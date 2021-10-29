@@ -78,7 +78,7 @@ public:
 		}
 		return 0;
 	}
-	const std::vector<Body> Get_Data(std::vector<Body> result) const
+	std::vector<Body> Get_Data(std::vector<Body> result)
 	{
 
 		return result;
@@ -110,12 +110,16 @@ public:
 		if (!Load_World_Data(path, file)){
 
 		}
-		void(*foo)(Renderer*);
-		foo = Init_Renderer;
+		void(*r_init)(Renderer*);
+		r_init = Init_Renderer;
 
 		Renderer renderer;
-		std::packaged_task<std::vector<Body>(std::vector<Body>)> r_bodytask(Renderer::Get_Data);
-		auto whatlefuhque = std::async(std::launch::async, foo , &renderer);
+		World_subsys& world = World;
+		std::packaged_task<std::vector<Body>(std::vector<Body>)> r_bodytask([world](std::vector<Body>)
+			{
+				return world.Get_Entities();
+			});
+		auto whatlefuhque = std::async(std::launch::async, r_init , &renderer);
 		worldloaded = true;
 
 		std::cout << "Init Complete" << std::endl;

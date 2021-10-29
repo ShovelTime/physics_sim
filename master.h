@@ -15,6 +15,8 @@
 // MASTER SYSTEM
 // controls the flow of the entire simulation, and is responsible for the main loop of the program.
 
+class Renderer
+
 class Master_sys
 {
 
