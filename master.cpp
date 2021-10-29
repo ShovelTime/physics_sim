@@ -1,22 +1,47 @@
 #define OLC_PGE_APPLICATION
+#define OLC_PGEX_GLX3D
 #include "olc/olcPixelGameEngine.h"
+#include "olc/olcPGEX_Graphics3D.h"
 #include "master.h"
 
 using nlohmann::json;
+using namespace std::placeholders;
 // MASTER SYSTEM
 // controls the flow of the entire simulation, and is the main loop of the program.
 class Renderer : public olc::PixelGameEngine
 {
 public:
-	olc::vf2d center;
-	Renderer()
+	
+	//const Master_sys& r_master;
+	float zoom_lvl = 1.0f; // 1 = roughly to one million(1.00e06) kilometer per pixel. 
+	float zoom_scalar = 1.00e+06f;
+	//std::vector<Body>(*taskfunc)(std::vector<Body>);
+	std::future<std::vector<Body>>& r_bodyfuture;
+	std::packaged_task<std::vector<Body>(std::vector<Body>)>& r_bodytask;
+	olc::vf2d center; //center of screen, starts the "0,0,0" point
+	std::vector<Body> position_dat;
+
+
+	int resolution_x = 512; //placeholder
+	int resolution_y = 480; //placeholder
+	Renderer() 
 	{
+		/*
+		taskfunc = Get_Data;
+		std::packaged_task<std::vector<Body>(std::vector<Body>)> task(std::bind(std::function(), _1));
+		r_bodytask;
+		*/
+		RECT rwindow;
+		const HWND hwindow = GetDesktopWindow();
+		GetWindowRect(hwindow, &rwindow);
+		resolution_x = rwindow.right;
+		resolution_y = rwindow.bottom;
 		sAppName = "Physics Sim";
 	}
 	bool OnUserCreate() override
 	{
+
 		center = {(float)ScreenWidth() / 2, (float)ScreenHeight() / 2 };
-		std::cout << center << std::endl;
 		return true;
 	}
 	bool OnUserUpdate(float fElapsedTime) override
@@ -25,25 +50,40 @@ public:
 		Clear(olc::DARK_BLUE);
 
 		// Draw Boundary
-		DrawLine(10, 10, 502, 10, olc::YELLOW);
-		DrawLine(10, 10, 10, 470, olc::YELLOW);
-		DrawLine(502, 10, 502, 470, olc::YELLOW);
-		DrawLine(10, 470, 502, 470, olc::YELLOW);
-		DrawCircle(center, 100, olc::CYAN);
+		/*
+		for (int iter = 0; iter < realspace_coords.size(); iter++)
+		{
+			float iter_x = realspace_coords[iter].position[0] / zoom_scalar;
+			float iter_y = realspace_coords[iter].position[1] / zoom_scalar;
+			if (fabs(iter_x) >= center.x || fabs(iter_y) >= center.y) // check if coordinates would be rendered outside of the window screen.
+			{
+				continue; // dont render it lmao
+			}
+			iter_x += center.x;
+			iter_y += center.y;
+			olc::vf2d pos = { iter_x, iter_y };
+			float dist = phys::get_distance_num({ iter_x,iter_y,0 }, { 0,0,0 });
+			Draw(pos, olc::GREEN);
+			DrawCircle(center, dist, olc::YELLOW);
+		}
+		*/
 		return true;
 	}
 public:
 	int Init()
 	{
-		if (Construct(512, 480, 2, 2))
+		if (Construct(resolution_x, resolution_y, 2, 2))
 		{
 			Start();
 		}
 		return 0;
 	}
-	void Get_Data(std::vector<std::vector<double>> realspace_coords)
+	const std::vector<Body> Get_Data(std::vector<Body> result) const
 	{
 
+		return result;
+			
+		
 	}
 
 };
@@ -74,6 +114,7 @@ public:
 		foo = Init_Renderer;
 
 		Renderer renderer;
+		std::packaged_task<std::vector<Body>(std::vector<Body>)> r_bodytask(Renderer::Get_Data);
 		auto whatlefuhque = std::async(std::launch::async, foo , &renderer);
 		worldloaded = true;
 

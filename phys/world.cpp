@@ -59,7 +59,7 @@ void World_subsys::Process(float tstep, float tmult)
 
 	
 }
-std::vector<Body> World_subsys::Get_Entities()
+const std::vector<Body> World_subsys::Get_Entities() const
 {
 	return EntityList;
 }

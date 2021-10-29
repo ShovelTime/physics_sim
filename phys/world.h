@@ -24,7 +24,7 @@ public:
 	World_subsys();
 	int Create_World(std::string name, std::vector<Body> BodyList);
 	void Process(float tstep, float tmult);
-	std::vector<Body> Get_Entities();
+	const std::vector<Body> Get_Entities() const;
 	std::string Get_Name();
 };
 #endif // !WORLD_H
