@@ -11,11 +11,11 @@
 #include <ctime>
 #include <functional>
 #include <chrono>
+#include <thread>
 #include "Render/Renderer.h"
 // MASTER SYSTEM
 // controls the flow of the entire simulation, and is responsible for the main loop of the program.
 
-class Renderer
 
 class Master_sys
 {
@@ -33,7 +33,7 @@ public:
 	void Init(std::filesystem::path path, std::string file);
 private:
 	bool stop_signal = false;
-	int Loop();
+	int Loop(std::shared_future<std::vector<Body>>& r_future, std::packaged_task<std::vector<Body>()>& r_task);
 	int Load_World_Data(std::filesystem::path path, std::string file);
 
 

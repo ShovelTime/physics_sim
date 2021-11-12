@@ -16,21 +16,18 @@ public:
 	float zoom_lvl = 1.0f; // 1 = roughly to one million(1.00e06) kilometer per pixel. 
 	float zoom_scalar = 1.00e+06f;
 	//std::vector<Body>(*taskfunc)(std::vector<Body>);
-	std::future<std::vector<Body>>& r_bodyfuture;
-	std::packaged_task<std::vector<Body>(std::vector<Body>)>& r_bodytask;
+	std::shared_future<std::vector<Body>>& r_bodyfuture;
+	std::packaged_task<std::vector<Body>()>& r_bodytask;
 	olc::vf2d center; //center of screen, starts the "0,0,0" point
 	std::vector<Body> position_dat;
 
 
 	int resolution_x = 512; //placeholder
 	int resolution_y = 480; //placeholder
-	Renderer() 
+	Renderer(std::shared_future<std::vector<Body>>& r_future, std::packaged_task<std::vector<Body>()>& r_task) : r_bodyfuture(r_future), r_bodytask(r_task)
 	{
-		/*
-		taskfunc = Get_Data;
-		std::packaged_task<std::vector<Body>(std::vector<Body>)> task(std::bind(std::function(), _1));
-		r_bodytask;
-		*/
+		position_dat = r_bodyfuture.get();
+		std::vector<Body>* pos_ptr = &position_dat;
 		RECT rwindow;
 		const HWND hwindow = GetDesktopWindow();
 		GetWindowRect(hwindow, &rwindow);
@@ -48,13 +45,15 @@ public:
 	{
 		// Erase previous frame
 		Clear(olc::DARK_BLUE);
-
-		// Draw Boundary
-		/*
-		for (int iter = 0; iter < realspace_coords.size(); iter++)
+		if (r_bodyfuture.wait_for(std::chrono::nanoseconds(0)) == std::future_status::ready)
 		{
-			float iter_x = realspace_coords[iter].position[0] / zoom_scalar;
-			float iter_y = realspace_coords[iter].position[1] / zoom_scalar;
+			position_dat = r_bodyfuture.get();
+		}
+
+		for (int iter = 0; iter < position_dat.size(); iter++)
+		{
+			float iter_x = position_dat[iter].position[0] / zoom_scalar;
+			float iter_y = position_dat[iter].position[1] / zoom_scalar;
 			if (fabs(iter_x) >= center.x || fabs(iter_y) >= center.y) // check if coordinates would be rendered outside of the window screen.
 			{
 				continue; // dont render it lmao
@@ -66,7 +65,6 @@ public:
 			Draw(pos, olc::GREEN);
 			DrawCircle(center, dist, olc::YELLOW);
 		}
-		*/
 		return true;
 	}
 public:
@@ -101,33 +99,34 @@ public:
 	{
 	}
 
-	void Init_Renderer(Renderer *renderer)
+	void Init_Renderer(std::packaged_task<std::vector<Body>()>& r_bodytask, std::shared_future<std::vector<Body>>& r_taskfuture)
 	{
-		renderer->Init();
+		Renderer renderer(r_taskfuture, r_bodytask);
+		renderer.Init();
 	}
 	void Master_sys::Init(std::filesystem::path path, std::string file)
 	{
 		if (!Load_World_Data(path, file)){
 
 		}
-		void(*r_init)(Renderer*);
+		void(*r_init)(std::packaged_task<std::vector<Body>()>&, std::shared_future<std::vector<Body>>&);
 		r_init = Init_Renderer;
 
-		Renderer renderer;
 		World_subsys& world = World;
-		std::packaged_task<std::vector<Body>(std::vector<Body>)> r_bodytask([world](std::vector<Body>)
+		std::packaged_task<std::vector<Body>()> r_bodytask([world]()
 			{
 				return world.Get_Entities();
 			});
-		auto whatlefuhque = std::async(std::launch::async, r_init , &renderer);
+		std::shared_future<std::vector<Body>> r_taskfuture = r_bodytask.get_future();
+		
+		std::thread whatlefuhque(r_init, r_bodytask, r_taskfuture);
+		whatlefuhque.detach();
 		worldloaded = true;
 
 		std::cout << "Init Complete" << std::endl;
 		std::cout << phys::get_distance_num(World.Get_Entities()[0].position, World.Get_Entities()[2].position) << " km" << std::endl;
 		std::cout << phys::get_distance_num(World.Get_Entities()[4].position, World.Get_Entities()[3].position) << " km" << std::endl;
-		Loop();
-
-
+		Loop(r_taskfuture, r_bodytask);
 		
 	}
 	int Master_sys::Load_World_Data(std::filesystem::path path, std::string file)
@@ -194,7 +193,7 @@ public:
 		return 1; 
 
 	}
-	int Master_sys::Loop()
+	int Master_sys::Loop(std::shared_future<std::vector<Body>>& r_future, std::packaged_task<std::vector<Body>()>& r_task)
 	{
 		auto startime = std::chrono::high_resolution_clock::now();
 		std::cout << "Simulating..." << std::endl;
@@ -203,10 +202,16 @@ public:
  			simticks++;
 			
 			World.Process(time_step, time_mult);
-			
-
-
-			//Renderer.Process
+			try
+			{
+				r_task.reset();
+				r_future = r_task.get_future();
+				r_task();
+			}
+			catch (std::exception e)
+			{
+				std::cout << e.what();
+			}
 
 
 		}
