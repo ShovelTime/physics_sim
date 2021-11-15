@@ -11,7 +11,6 @@
 #include <ctime>
 #include <functional>
 #include <chrono>
-#include <thread>
 #include "Render/Renderer.h"
 // MASTER SYSTEM
 // controls the flow of the entire simulation, and is responsible for the main loop of the program.

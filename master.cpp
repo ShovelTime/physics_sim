@@ -5,7 +5,6 @@
 #include "master.h"
 
 using nlohmann::json;
-using namespace std::placeholders;
 // MASTER SYSTEM
 // controls the flow of the entire simulation, and is the main loop of the program.
 class Renderer : public olc::PixelGameEngine
@@ -99,9 +98,8 @@ public:
 	{
 	}
 
-	void Init_Renderer(std::packaged_task<std::vector<Body>()>& r_bodytask, std::shared_future<std::vector<Body>>& r_taskfuture)
+	void Init_Renderer(Renderer renderer)
 	{
-		Renderer renderer(r_taskfuture, r_bodytask);
 		renderer.Init();
 	}
 	void Master_sys::Init(std::filesystem::path path, std::string file)
@@ -109,8 +107,6 @@ public:
 		if (!Load_World_Data(path, file)){
 
 		}
-		void(*r_init)(std::packaged_task<std::vector<Body>()>&, std::shared_future<std::vector<Body>>&);
-		r_init = Init_Renderer;
 
 		World_subsys& world = World;
 		std::packaged_task<std::vector<Body>()> r_bodytask([world]()
@@ -119,8 +115,10 @@ public:
 			});
 		std::shared_future<std::vector<Body>> r_taskfuture = r_bodytask.get_future();
 		
-		std::thread whatlefuhque(r_init, r_bodytask, r_taskfuture);
-		whatlefuhque.detach();
+		Renderer renderer(r_taskfuture, r_bodytask);
+
+		//std::thread r_thread(Init_Renderer, renderer);//r_bodytask, r_taskfuture);
+		//r_thread.detach();
 		worldloaded = true;
 
 		std::cout << "Init Complete" << std::endl;
