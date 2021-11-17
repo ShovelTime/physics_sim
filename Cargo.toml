@@ -1,0 +1,12 @@
+cargo-features = ["resolver"]
+[package]
+name = "physicssim_rust"
+version = "0.1.0"
+authors = ["erik"]
+edition = "2018"
+resolver = "2"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rend3 = "0.2.3"
+json = "*"
