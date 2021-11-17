@@ -69,7 +69,7 @@ std::string World_subsys::Get_Name()
 }
 std::vector<double> World_subsys::Calc_Acceleration(int iter, int lsize)
 {
-	std::vector<double> accel{ 0, 0, 0 };
+	std::vector<double> accel;
 
 	for (int iter2 = 0; iter2 < lsize; iter2++)
 	{
@@ -78,7 +78,7 @@ std::vector<double> World_subsys::Calc_Acceleration(int iter, int lsize)
 			continue;
 
 		}
-		accel = vec::vec_add(accel, phys::get_acceleration_vec(EntityList[iter], EntityList[iter2]));
+		accel = phys::get_acceleration_vec(EntityList[iter], EntityList[iter2]);
 
 	}
 	return accel;

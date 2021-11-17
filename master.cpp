@@ -143,7 +143,6 @@ public:
 				
 				for (int i = 0; i < bodyparser.size(); ++i) //Parse Body data into Objects
 				{
-					std::cout << i << std::endl;
 					Bodies.push_back(
 						Body(
 						bodyparser.at(i).at("name").get<std::string>(),
@@ -221,6 +220,7 @@ public:
 			{
 				std::cout << EntList[i].position[iter] << std::endl;
 			}
+			std::cout << phys::get_distance_num(EntList[i].position, EntList[0].position) << std::endl;
 			std::cout << "velocity: " << std::endl;
 			for (int iter = 0; iter < 3; iter++)
 			{
