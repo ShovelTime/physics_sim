@@ -10,29 +10,40 @@ pub enum PEngineState{
 
 pub struct PEngine
 {
-    timestamp : chrono::Duration,
+    pub timestamp : chrono::Duration,
     simticks : i64, //tracker of how many ticks passed in simulation
-    worldstate : PEngineState,
-    time_step : f64, //Time increment in seconds per tick
-    loadedworld : World,
+    pub worldstate : PEngineState,
+    pub time_step : f64, //Time increment in seconds per tick
+    pub loadedworld : World,
 
 }
 
+
+
 pub struct World
 {
-    name : String,
-    bodylist : Vec<Body>,
+    pub name : String,
+    pub bodylist : Vec<Body>,
     updatepkg : Vec<Body>,
 
 }
 
-struct Body
+impl World 
 {
-    name : String,
-    radius : f32,
-    mass : f64,
-    velocity : Vec<f64>,
-    position : Vec<f64>,
+    fn get_body_list(&self) -> &Vec<Body>
+    {
+        return &self.bodylist;
+    }
+
+}
+
+pub struct Body
+{
+   pub  name : String,
+   pub radius : f32,
+   pub mass : f64,
+   pub velocity : Vec<f64>,
+   pub position : Vec<f64>,
 
 
 }

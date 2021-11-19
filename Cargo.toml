@@ -8,6 +8,9 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+glam = "*"
+pollster = "*"
+winit = "*"
 rend3 = "0.2.3"
 json = "*"
 chrono = "*"
