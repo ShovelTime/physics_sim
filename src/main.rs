@@ -4,7 +4,7 @@ extern crate pollster;
 extern crate winit;
 extern crate chrono;
 
-mod math;
+pub mod math;
 mod render;
 mod p_engine;
 
@@ -19,7 +19,9 @@ fn main() {
     currpath.push("Sol.json");
     let file_dat = fs::read_to_string(&currpath).unwrap();
     let parse_res = json::parse(&file_dat).unwrap();
+    
+    let timestamp = parse_res["World"]["date"].as_str().unwrap().to_string();
     //let time = parse_res.
     //let mut p_engine = PEngine;
-    
+        
 }

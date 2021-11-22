@@ -1,3 +1,5 @@
+use crate::math::vec;
+
 pub enum PEngineState{
     Unloaded,
     Loading,
@@ -19,12 +21,11 @@ pub struct PEngine
 }
 
 
-
 pub struct World
 {
     pub name : String,
     pub bodylist : Vec<Body>,
-    updatepkg : Vec<Body>,
+    updatepkg : Vec<vec::Vec3>,
 
 }
 
@@ -42,8 +43,8 @@ pub struct Body
    pub  name : String,
    pub radius : f32,
    pub mass : f64,
-   pub velocity : Vec<f64>,
-   pub position : Vec<f64>,
+   pub velocity : vec::Vec3,
+   pub position : vec::Vec3,
 
 
 }
