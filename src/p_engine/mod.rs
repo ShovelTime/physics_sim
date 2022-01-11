@@ -14,8 +14,9 @@ pub enum PEngineState{
 }
 pub struct PEngine
 {
-    pub timestamp : chrono::Duration,
+    pub timestamp : i64,
     pub simticks : i64, //tracker of how many ticks passed in simulation
+    pub global_state : std::sync::Arc<crate::GlobalState>,
     pub worldstate : PEngineState,
     pub time_step : f64, //Time increment in seconds per tick
     pub world : World,
@@ -23,7 +24,7 @@ pub struct PEngine
 }
 impl PEngine
 {
-    pub fn Process_Physics(&mut self)
+    pub fn process_physics(&mut self)
     {
         let mut newbodylist = Vec::<Body>::new();
         for bodies in self.world.get_body_list().iter() {
@@ -72,7 +73,8 @@ impl Default for PEngine
     {
         PEngine
         {
-            timestamp : chrono::Duration::seconds(0),
+            global_state : std::sync::Arc::new(crate::GlobalState::Unloaded),
+            timestamp : 0,
             simticks : 0,
             worldstate : PEngineState::Unloaded,
             time_step : 60.0f64,

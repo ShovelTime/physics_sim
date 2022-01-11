@@ -31,8 +31,8 @@ pub fn init_Render<'b>(bodyrx : std::sync::mpsc::Receiver<Vec<p_engine::Body>>)
     );
 
     let renderer = rend3::Renderer::new(iad, Some(window_size.width as f32 / window_size.height as f32)).unwrap();
-    /*
-    let env_loop = eventloop.run(move |event : winit::event::Event<winit::event::WindowEvent>, _, control| match event {
+    
+    let env_loop = eventloop.run(move |event, _, control| match event {
         // Close button was clicked, we should close.
         winit::event::Event::WindowEvent {
             event: winit::event::WindowEvent::CloseRequested,
@@ -46,6 +46,7 @@ pub fn init_Render<'b>(bodyrx : std::sync::mpsc::Receiver<Vec<p_engine::Body>>)
             ..
         } => {
             let size = glam::UVec2::new(size.width, size.height);
+        
             // Reconfigure the surface for the new size.
             rend3::configure_surface(
                 &surface,
@@ -68,8 +69,10 @@ pub fn init_Render<'b>(bodyrx : std::sync::mpsc::Receiver<Vec<p_engine::Body>>)
             tonemapping_routine.resize(size);
             */
         }
+        _ => {
+            
+        }
     });
     
-    */
 
 }
