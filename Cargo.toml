@@ -10,7 +10,7 @@ resolver = "2"
 [dependencies]
 glam = "0.19.0"
 pollster = "*"
-winit = "0.23.0"
+winit = "0.26.0"
 rend3 = "0.2.3"
 json = "*"
 chrono = "*"

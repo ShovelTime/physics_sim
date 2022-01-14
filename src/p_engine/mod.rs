@@ -2,7 +2,7 @@ use crate::math::vec;
 use crate::math::phys::Phys;
 
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum PEngineState{
     Unloaded,
     Loading,
@@ -12,11 +12,12 @@ pub enum PEngineState{
     Stopped,
 
 }
+#[derive(Clone)]
 pub struct PEngine
 {
+    pub bodycount : i64,
     pub timestamp : i64,
     pub simticks : i64, //tracker of how many ticks passed in simulation
-    pub global_state : std::sync::Arc<crate::GlobalState>,
     pub worldstate : PEngineState,
     pub time_step : f64, //Time increment in seconds per tick
     pub world : World,
@@ -26,7 +27,9 @@ impl PEngine
 {
     pub fn process_physics(&mut self)
     {
+        /*
         let mut newbodylist = Vec::<Body>::new();
+        
         for bodies in self.world.get_body_list().iter() {
             let accel1 = self.accel_loop(&bodies.position, &bodies.name);
             let new_pos = bodies.position + bodies.velocity * self.time_step + ((accel1 * self.time_step.powi(2)) / 2.0f64);
@@ -34,6 +37,7 @@ impl PEngine
             let new_vel = bodies.velocity + ((accel1 + accel2) / 2.0f64) * self.time_step;
             let new_body = Body
             {
+                bID : bodies.bID,
                 name : bodies.name.clone(),
                 position : new_pos,
                 velocity : new_vel,
@@ -45,14 +49,26 @@ impl PEngine
             newbodylist.push(new_body);
         }
         self.world.bodylist = newbodylist;
+        */
+        let mut newbodylist = self.world.get_body_list_cpy().unwrap();
+        for bodies in newbodylist.iter_mut() {
+            //Velocity Verlet Integration
+            let accel1 = self.accel_loop(&bodies.position, &bodies.bID);
+            let new_pos = bodies.position + bodies.velocity * self.time_step + ((accel1 * self.time_step.powi(2)) / 2.0f64);
+            let accel2 = self.accel_loop(&new_pos, &bodies.bID);
+            let new_vel = bodies.velocity + ((accel1 + accel2) / 2.0f64) * self.time_step;
+            bodies.position = new_pos;
+            bodies.velocity = new_vel;
+        }
+        self.world.bodylist = newbodylist;
         
     }
-    fn accel_loop(&self, orig : &vec::Vec3, name : &String) -> vec::Vec3
+    fn accel_loop(&self, orig : &vec::Vec3, bid : &i64) -> vec::Vec3
     {
         let mut accel_vel = vec::Vec3::default();
         for tgt in self.world.get_body_list().iter() 
         {
-            if &tgt.name == name
+            if &tgt.bID == bid // dont perform calculations on itself.
             {
                 continue;
             }
@@ -73,7 +89,7 @@ impl Default for PEngine
     {
         PEngine
         {
-            global_state : std::sync::Arc::new(crate::GlobalState::Unloaded),
+            bodycount : 0,
             timestamp : 0,
             simticks : 0,
             worldstate : PEngineState::Unloaded,
@@ -83,7 +99,7 @@ impl Default for PEngine
     }
 }
 
-
+#[derive(Clone)]
 pub struct World
 {
     pub name : String,
@@ -117,11 +133,12 @@ impl World
 #[derive(Clone)]
 pub struct Body
 {
-   pub  name : String,
-   pub radius : f32,
-   pub mass : f64,
-   pub velocity : vec::Vec3,
-   pub position : vec::Vec3,
+    pub bID : i64,
+    pub name : String,
+    pub radius : f32,
+    pub mass : f64,
+    pub velocity : vec::Vec3,
+    pub position : vec::Vec3,
 
 
 }

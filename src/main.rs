@@ -27,11 +27,13 @@ pub enum GlobalState
     Paused,
     Stopped,
 }
-static mut prog_state : &'static std::sync::Arc<GlobalState> = &std::sync::Arc::new(GlobalState::Unloaded);
+//static prog_state : &'static std::sync::Arc<GlobalState> = &std::sync::Arc::new(GlobalState::Unloaded);
 fn main() {
+    
     
     let mut currpath = std::env::current_dir().unwrap();
     currpath.push("Sol.json");
+    println!("{0}", currpath.to_str().unwrap());
     let mut phys_engine = p_engine::PEngine::default();
 
     let file_dat = fs::read_to_string(&currpath).unwrap();
@@ -39,12 +41,12 @@ fn main() {
 
     let time = &parse_res["World"]["date"].to_string();
     let p_name = &parse_res["World"]["name"].to_string();
-    let p_date = NaiveDateTime::parse_from_str(time.as_str(), "%Y-%m-%d %H:%M:%S").unwrap();
+    println!("name : {0}", p_name);
+    let p_date = NaiveDateTime::parse_from_str(time, "%Y-%m-%d %H:%M:%S").unwrap();
 
     let bodies = &parse_res["World"]["Bodies"];
     let body_iter = bodies.members();
-    **prog_state = GlobalState::Loading;
-    phys_engine.global_state = prog_state.clone();
+    //**prog_state = GlobalState::Loading;
     phys_engine.worldstate = p_engine::PEngineState::Loading;
     phys_engine.world.name = p_name.to_string();
     phys_engine.timestamp = p_date.timestamp();
@@ -52,6 +54,7 @@ fn main() {
     {
         phys_engine.world.bodylist.push(p_engine::Body
             {
+                bID : phys_engine.bodycount,
                 name : members["name"].to_string(),
                 mass : members["mass"].as_f64().unwrap(),
                 radius : members["radius"].as_f32().unwrap(),
@@ -59,6 +62,7 @@ fn main() {
                 velocity : math::vec::Vec3::new(members["velocity"][0].as_f64().unwrap(), members["velocity"][1].as_f64().unwrap(), members["velocity"][1].as_f64().unwrap())
 
             });
+            phys_engine.bodycount += 1;
     }
     phys_engine.worldstate = p_engine::PEngineState::Loaded;
 
@@ -78,7 +82,7 @@ fn main() {
 }
 fn init(engine_state : p_engine::PEngine) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
 {
-    let (bodytx, bodyrx) : ( Sender<Vec<p_engine::Body>> , Receiver<Vec<p_engine::Body>> ) = mpsc::channel();
+    let (bodytx, bodyrx) : ( Sender<p_engine::PEngine> , Receiver<p_engine::PEngine> ) = mpsc::channel();
     let (intx, inrx) : (Sender<(String, String)>, Receiver<(String, String)>) = mpsc::channel();
     let phys_thread = std::thread::spawn(move || {
         println!("Physics thread started");
@@ -91,7 +95,7 @@ fn init(engine_state : p_engine::PEngine) -> (std::thread::JoinHandle<()>, std::
         #[allow(while_true)]
         while true
         {
-            bodyrx.recv().expect("Connection to Sender lost!");
+            bodyrx.recv().expect("Connection to Sender lost!"); //p_engine will always send data, with the current delay this will never result in an Empty Err, but this should be accounted for once the renderer is implemented.
             std::thread::sleep(std::time::Duration::from_secs(3));
         }
     });
@@ -100,24 +104,28 @@ fn init(engine_state : p_engine::PEngine) -> (std::thread::JoinHandle<()>, std::
 
     });
 
-   **prog_state = GlobalState::Running;
+   //**prog_state = GlobalState::Running;
     
     return (phys_thread, rend_thread, input_thread);
     
 }
 
-fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::Sender<Vec<p_engine::Body>>) 
+fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::Sender<p_engine::PEngine>) 
 {
     engine_state.worldstate = p_engine::PEngineState::Running;
-    while engine_state.worldstate != p_engine::PEngineState::Stopped && **prog_state != GlobalState::Stopped
+    while engine_state.worldstate != p_engine::PEngineState::Stopped
     {
+        if engine_state.worldstate == p_engine::PEngineState::Paused
+        {
+            continue;
+        }
         if engine_state.simticks >= 5256000
         {
             engine_state.worldstate = p_engine::PEngineState::Stopped;
         }
         engine_state.process_physics();
         engine_state.simticks = engine_state.simticks + 1;
-        bodytx.send(engine_state.world.get_body_list_cpy().unwrap()).expect("Connection to reciever lost!");
+        bodytx.send(engine_state.clone()).expect("Connection to reciever lost!");
 
 
     }
@@ -126,6 +134,6 @@ fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::Sender
 }
 fn inloop(cmdsend : std::sync::mpsc::Sender<(String, String)>)
 {
-
+    return;
 
 }
