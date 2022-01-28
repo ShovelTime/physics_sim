@@ -54,6 +54,10 @@ impl Vec3
     {
         self.fast_div(self.length())
     }
+    pub fn colin_normalize(&self, other : Vec3) -> Vec3
+    {
+        
+    }
     //fn to_vec2(self) -> Vec2
     
     //fn to_vec4(self, other : Option<f64>) -> Vec4

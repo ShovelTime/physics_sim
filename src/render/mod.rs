@@ -1,27 +1,35 @@
-extern crate rend3;
+extern crate glium;
+use glium::glutin;
 use std;
-use winit::platform::windows::EventLoopExtWindows;
+use glutin::platform::windows::EventLoopExtWindows;
 use crate::p_engine;
 pub struct Rend3SolarSys
 {
+    camera : rend3::types::Camera,
     objects : Vec<Option<rend3::types::ObjectHandle>>,
     directional_lights : Vec<Option<rend3::types::DirectionalLightHandle>>,
 }
 
 pub fn init_Render<'b>(bodyrx : std::sync::mpsc::Receiver<Vec<p_engine::Body>>)
 {
-    
+    let eventloop = glutin::event_loop::EventLoop::<glutin::event::Event<glutin::event::WindowEvent>>::new_any_thread();
+    let wb = glutin::window::WindowBuilder::new();
+    let cb = glutin::ContextBuilder::new();
+    let display = glium::Display::new(wb, cb, &eventloop);
+    let 
+
+    /*
     let eventloop = winit::event_loop::EventLoop::<winit::event::Event<winit::event::WindowEvent>>::new_any_thread();
     let window;
     let mut builder = winit::window::WindowBuilder::new();
     builder = builder.with_title("Physics Simulation");
-    window = builder.build(&eventloop).expect(" the OS Windows failed to build! Use linux instead. Noob.");
+    window = builder.build(&eventloop).expect(" the Window object failed to build! Use linux instead. Nerd.");
 
     let window_size = window.inner_size();
     let iad = pollster::block_on(rend3::create_iad(None, None, None)).unwrap();
     let surface = std::sync::Arc::new(unsafe { iad.instance.create_surface(&window) });
     let format = surface.get_preferred_format(&iad.adapter).unwrap();
-
+/*  
     rend3::configure_surface(
         &surface,
         &iad.device,
@@ -31,6 +39,10 @@ pub fn init_Render<'b>(bodyrx : std::sync::mpsc::Receiver<Vec<p_engine::Body>>)
     );
 
     let renderer = rend3::Renderer::new(iad, Some(window_size.width as f32 / window_size.height as f32)).unwrap();
+
+    let base_rendergraph = rend3_routine
+*/
+    //renderer.set_camera_data(data: Camera)
     
     let env_loop = eventloop.run(move |event, _, control| match event {
         // Close button was clicked, we should close.
@@ -73,6 +85,6 @@ pub fn init_Render<'b>(bodyrx : std::sync::mpsc::Receiver<Vec<p_engine::Body>>)
                 
         }
     });
-    
+    */
 
 }

@@ -38,17 +38,16 @@ fn main() {
 
     let file_dat = fs::read_to_string(&currpath).unwrap();
     let parse_res = json::parse(&file_dat).unwrap();
-
-    let time = &parse_res["World"]["date"].to_string();
-    let p_name = &parse_res["World"]["name"].to_string();
-    println!("name : {0}", p_name);
-    let p_date = NaiveDateTime::parse_from_str(time, "%Y-%m-%d %H:%M:%S").unwrap();
+    
+    
+    
+    let p_date = NaiveDateTime::parse_from_str("2000-01-01 00:00:01", "%Y-%m-%d %H:%M:%S").unwrap();
 
     let bodies = &parse_res["World"]["Bodies"];
     let body_iter = bodies.members();
     //**prog_state = GlobalState::Loading;
     phys_engine.worldstate = p_engine::PEngineState::Loading;
-    phys_engine.world.name = p_name.to_string();
+    phys_engine.world.name = "Solar System".to_string();//p_name.to_string();
     phys_engine.timestamp = p_date.timestamp();
     for members in body_iter
     {
