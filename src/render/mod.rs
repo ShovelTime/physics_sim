@@ -1,4 +1,6 @@
 extern crate glium;
+extern crate glam;
+use glium::implement_vertex;
 use glium::glutin;
 use std;
 use glutin::platform::windows::EventLoopExtWindows;
@@ -15,8 +17,17 @@ pub fn init_Render<'b>(bodyrx : std::sync::mpsc::Receiver<Vec<p_engine::Body>>)
     let eventloop = glutin::event_loop::EventLoop::<glutin::event::Event<glutin::event::WindowEvent>>::new_any_thread();
     let wb = glutin::window::WindowBuilder::new();
     let cb = glutin::ContextBuilder::new();
-    let display = glium::Display::new(wb, cb, &eventloop);
-    let 
+    let display = glium::Display::new(wb, cb, &eventloop).unwrap();
+    let vertex_buffer = {
+        #[derive(Copy, Clone)]
+        struct Vertex{
+            position : [f32; 3],
+            color : [f32; 3]
+        }
+        implement_vertex!(Vertex, position, color);
+
+        glium::VertexBuffer::new(&display, )
+    }
 
     /*
     let eventloop = winit::event_loop::EventLoop::<winit::event::Event<winit::event::WindowEvent>>::new_any_thread();
