@@ -13,7 +13,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
 {
     let eventloop = glutin::event_loop::EventLoop::<glutin::event::Event<glutin::event::WindowEvent>>::new_any_thread();
     let wb = glutin::window::WindowBuilder::new();
-    let cb = glutin::ContextBuilder::new();
+    let cb = glutin::ContextBuilder::new().with_depth_buffer(24);
     let display = glium::Display::new(wb, cb, &eventloop).unwrap();
 
 
@@ -36,7 +36,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
             let curr_vertices : &Vec3 = &vertices[index];
             vertex_buf.push(Vertex{
                 position : [curr_vertices.x as f32, curr_vertices.y as f32, curr_vertices.z as f32],
-                color : [0.5, 0.5, 0.5]
+                color : [1.0, 1.0, 1.0]
             })
         }
         glium::VertexBuffer::new(&display, &vertex_buf).unwrap()
@@ -79,7 +79,8 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
         };
 
         let mut res = display.draw();
-        res.clear_color(0.0, 0.0, 0.0, 0.0);
+        res.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
+
         res.draw(&vertex_buffer, &index_buffer, &program, &uniforms, &Default::default()).unwrap();
         res.finish().unwrap();
     };
