@@ -2,7 +2,7 @@ use crate::math::phys;
 use crate::p_engine;
 use crate::constants;
 #[derive(Copy, Clone)]
-pub struct Vec3 
+pub struct Vec3
 {
     pub x : f64,
     pub y : f64,

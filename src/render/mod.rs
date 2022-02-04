@@ -29,10 +29,10 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
 
 
     let (mut vertices, normalsvec, texvec) = lin_alg::create_sphere(2.0);
-    let normals = glium::VertexBuffer::new(&display, &normalsvec);
     for iter in 0..vertices.len(){
         vertices[iter] = vertices[iter].fast_normalize();
     }
+
     let vertex_buffer = {
         #[derive(Copy, Clone)]
         struct Vertex {
@@ -40,7 +40,6 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
             color : [f32; 3]
         }
         implement_vertex!(Vertex, position, color);
-
         let size : usize = vertices.len();
         let mut vertex_buf = Vec::with_capacity(size);
         for index in 0..size
@@ -52,6 +51,25 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
             })
         }
         glium::VertexBuffer::new(&display, &vertex_buf).unwrap()
+    };
+    
+    let normals = {
+        #[derive(Copy, Clone)]
+        struct Normals {
+            position : [f32; 3]
+        }
+        implement_vertex!(Normals, position);
+
+        let size : usize = normalsvec.len();
+        let mut normals_buf = Vec::with_capacity(size);
+        for index in 0..size
+        {
+            let curr_vertices : &Vec3 = &vertices[index];
+            normals_buf.push(Normals{
+                position : [curr_vertices.x as f32, curr_vertices.y as f32, curr_vertices.z as f32]
+            });
+        }
+        glium::VertexBuffer::new(&display, &normals_buf).unwrap()
     };
     
     let index_buffer = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);

@@ -12,6 +12,7 @@ glam = "0.20.0"
 pollster = "*"
 winit = "0.26.0"
 rend3 = "0.2.3"
-json = "*"
+serde = { version="1.0.136", features = ["derive"] }
+serde_json = "*"
 chrono = "*"
 glium = "0.31.0"

@@ -1,4 +1,5 @@
-extern crate json;
+extern crate serde;
+extern crate serde_json;
 extern crate rend3;
 extern crate pollster;
 extern crate winit;
@@ -13,6 +14,9 @@ pub mod ch_com;
 
 use chrono::{NaiveDateTime};
 use std::fs;
+use serde_json::{Value};
+use serde::{Deserialize, Serialize};
+use serde_json::Result;
 use std::sync::mpsc;
 use std::sync::mpsc::{Sender, Receiver};
 
@@ -27,44 +31,51 @@ pub enum GlobalState
     Paused,
     Stopped,
 }
+
 //static prog_state : &'static std::sync::Arc<GlobalState> = &std::sync::Arc::new(GlobalState::Unloaded);
 fn main() {
     
-    
+    #[derive(Serialize, Deserialize)]
+    struct BodyList{
+    list: Vec<(String, f32, f64, [f64 ; 3], [f64 ; 3])>
+    }
     let mut currpath = std::env::current_dir().unwrap();
     currpath.push("Sol.json");
     println!("{0}", currpath.to_str().unwrap());
     let mut phys_engine = p_engine::PEngine::default();
 
-    let file_dat = fs::read_to_string(&currpath).unwrap();
-    let parse_res = json::parse(&file_dat).unwrap();
+    let file_dat = fs::File::open(&currpath).unwrap();
+    let mut parse_res : Value = serde_json::from_reader(file_dat).expect("JSON failed yo");
     
     
     
     let p_date = NaiveDateTime::parse_from_str("2000-01-01 00:00:01", "%Y-%m-%d %H:%M:%S").unwrap();
 
-    let bodies = &parse_res["World"]["Bodies"];
-    let body_iter = bodies.members();
+
+    let bodies = parse_res.get_mut("Bodies").unwrap();
+    let body_list : BodyList = serde_json::from_value(bodies.take()).expect("You fucked up son");
     //**prog_state = GlobalState::Loading;
     phys_engine.worldstate = p_engine::PEngineState::Loading;
     phys_engine.world.name = "Solar System".to_string();//p_name.to_string();
     phys_engine.timestamp = p_date.timestamp();
-    for members in body_iter
+    for members in body_list.list
     {
+        let position_arr = members.3;
+        let velocity = members.4;
         phys_engine.world.bodylist.push(p_engine::Body
             {
                 bID : phys_engine.bodycount,
-                name : members["name"].to_string(),
-                mass : members["mass"].as_f64().unwrap(),
-                radius : members["radius"].as_f32().unwrap(),
-                position : math::vec::Vec3::new(members["position"][0].as_f64().unwrap(), members["position"][1].as_f64().unwrap(), members["position"][1].as_f64().unwrap()),
-                velocity : math::vec::Vec3::new(members["velocity"][0].as_f64().unwrap(), members["velocity"][1].as_f64().unwrap(), members["velocity"][1].as_f64().unwrap())
+                name : members.0,
+                mass : members.2,
+                radius : members.1,
+                position : math::vec::Vec3::new(position_arr[0], position_arr[1], position_arr[2]),
+                velocity : math::vec::Vec3::new(velocity[0], velocity[1], velocity[2])
 
             });
             phys_engine.bodycount += 1;
     }
     phys_engine.worldstate = p_engine::PEngineState::Loaded;
-
+    println!("{0}", phys_engine.bodycount);
     let (p_thread, r_thread, i_thread) = init(phys_engine);
 
     p_thread.join().unwrap();
