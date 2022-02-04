@@ -4,6 +4,8 @@ use crate::math::lin_alg;
 use glium::{implement_vertex, program, uniform};
 use glium::glutin;
 use glium::Surface;
+use glium::DrawParameters;
+use glium::Depth;
 use std;
 use glutin::platform::windows::EventLoopExtWindows;
 use crate::math::vec::Vec3;
@@ -15,9 +17,19 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
     let wb = glutin::window::WindowBuilder::new();
     let cb = glutin::ContextBuilder::new().with_depth_buffer(24);
     let display = glium::Display::new(wb, cb, &eventloop).unwrap();
+    let params = glium::DrawParameters {
+        depth: glium::Depth {
+            test: glium::draw_parameters::DepthTest::IfLess,
+            write: true,
+            .. Default::default()
+
+        },
+        .. Default::default()
+    };
 
 
-    let mut vertices = lin_alg::fast_sphere(2.0);
+    let (mut vertices, normalsvec, texvec) = lin_alg::create_sphere(2.0);
+    let normals = glium::VertexBuffer::new(&display, &normalsvec);
     for iter in 0..vertices.len(){
         vertices[iter] = vertices[iter].fast_normalize();
     }
@@ -81,7 +93,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
         let mut res = display.draw();
         res.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
 
-        res.draw(&vertex_buffer, &index_buffer, &program, &uniforms, &Default::default()).unwrap();
+        res.draw((&vertex_buffer, &normals), &index_buffer, &program, &uniforms, &Default::default()).unwrap();
         res.finish().unwrap();
     };
 
