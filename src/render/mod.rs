@@ -1,33 +1,106 @@
 extern crate glium;
 extern crate glam;
-use glium::implement_vertex;
+use crate::math::lin_alg;
+use glium::{implement_vertex, program, uniform};
 use glium::glutin;
+use glium::Surface;
 use std;
 use glutin::platform::windows::EventLoopExtWindows;
+use crate::math::vec::Vec3;
 use crate::p_engine;
-pub struct Rend3SolarSys
-{
-    camera : rend3::types::Camera,
-    objects : Vec<Option<rend3::types::ObjectHandle>>,
-    directional_lights : Vec<Option<rend3::types::DirectionalLightHandle>>,
-}
 
-pub fn init_Render<'b>(bodyrx : std::sync::mpsc::Receiver<Vec<p_engine::Body>>)
+pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
 {
     let eventloop = glutin::event_loop::EventLoop::<glutin::event::Event<glutin::event::WindowEvent>>::new_any_thread();
     let wb = glutin::window::WindowBuilder::new();
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &eventloop).unwrap();
+
+
+    let mut vertices = lin_alg::fast_sphere(2.0);
+    for iter in 0..vertices.len(){
+        vertices[iter] = vertices[iter].fast_normalize();
+    }
     let vertex_buffer = {
         #[derive(Copy, Clone)]
-        struct Vertex{
+        struct Vertex {
             position : [f32; 3],
             color : [f32; 3]
         }
         implement_vertex!(Vertex, position, color);
 
-        glium::VertexBuffer::new(&display, )
+        let size : usize = vertices.len();
+        let mut vertex_buf = Vec::with_capacity(size);
+        for index in 0..size
+        {
+            let curr_vertices : &Vec3 = &vertices[index];
+            vertex_buf.push(Vertex{
+                position : [curr_vertices.x as f32, curr_vertices.y as f32, curr_vertices.z as f32],
+                color : [0.5, 0.5, 0.5]
+            })
+        }
+        glium::VertexBuffer::new(&display, &vertex_buf).unwrap()
+    };
+    
+    let index_buffer = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
+    let program = program!(&display, 410 => {vertex: "
+    #version 410
+    uniform mat4 matrix;
+    
+    in vec3 position;
+    in vec3 color;
+
+    out vec3 vColor;
+    
+    void main(){
+        gl_Position = vec4(position, 1.0) * matrix;
+        vColor = color;
     }
+    ", 
+    fragment: "
+    #version 410
+    in vec3 vColor;
+    out vec4 f_color;
+
+    void main(){
+        f_color = vec4(vColor, 1.0);
+    }
+    "}).unwrap();
+
+
+    let draw = move || {
+        let uniforms = uniform! {
+            matrix: [
+                [1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0f32]
+            ]
+        };
+
+        let mut res = display.draw();
+        res.clear_color(0.0, 0.0, 0.0, 0.0);
+        res.draw(&vertex_buffer, &index_buffer, &program, &uniforms, &Default::default()).unwrap();
+        res.finish().unwrap();
+    };
+
+    draw();
+
+    eventloop.run(move |event, _, control_flow| {
+        *control_flow = match event {
+            glutin::event::Event::WindowEvent { event, .. } => match event {
+                // Break from the main loop when the window is closed.
+                glutin::event::WindowEvent::CloseRequested => glutin::event_loop::ControlFlow::Exit,
+                // Redraw the triangle when the window is resized.
+                glutin::event::WindowEvent::Resized(..) => {
+                    draw();
+                    glutin::event_loop::ControlFlow::Poll
+                },
+                _ => glutin::event_loop::ControlFlow::Poll,
+            },
+            _ => glutin::event_loop::ControlFlow::Poll,
+        };
+    });
 
     /*
     let eventloop = winit::event_loop::EventLoop::<winit::event::Event<winit::event::WindowEvent>>::new_any_thread();

@@ -4,9 +4,9 @@ use crate::constants;
 #[derive(Copy, Clone)]
 pub struct Vec3 
 {
-    x : f64,
-    y : f64,
-    z : f64,
+    pub x : f64,
+    pub y : f64,
+    pub z : f64,
 }
 //#[allow(dead_code)]
 impl Vec3
@@ -28,7 +28,7 @@ impl Vec3
     {
         Vec3::new(vec[0], vec[1], vec[2])
     }
-    pub fn fast_div(&self, other : f64) -> Vec3 // faster than the div"/" Operator, but loses some accuracy to rounding errors.
+    pub fn fast_div(&self, other : f64) -> Vec3 // faster than the normal division "/" Operator, but loses some accuracy to rounding errors.
     {
         let div = 1.0f64 / other;
         Vec3::new(self.x * div, self.y * div, self.z * div)
@@ -53,10 +53,6 @@ impl Vec3
     pub fn fast_normalize(&self) -> Vec3
     {
         self.fast_div(self.length())
-    }
-    pub fn colin_normalize(&self, other : Vec3) -> Vec3
-    {
-        
     }
     //fn to_vec2(self) -> Vec2
     

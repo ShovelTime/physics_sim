@@ -95,6 +95,7 @@ impl Default for PEngine
             worldstate : PEngineState::Unloaded,
             time_step : 60.0f64,
             world : World::default()
+            
         }
     }
 }

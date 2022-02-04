@@ -89,14 +89,8 @@ fn init(engine_state : p_engine::PEngine) -> (std::thread::JoinHandle<()>, std::
         
     });
     let rend_thread = std::thread::spawn(move || {
-        //render::init_Render(bodyrx);
+        render::init_Render(bodyrx);
         println!("Render thread started");
-        #[allow(while_true)]
-        while true
-        {
-            bodyrx.recv().expect("Connection to Sender lost!"); //p_engine will always send data, with the current delay this will never result in an Empty Err, but this should be accounted for once the renderer is implemented.
-            std::thread::sleep(std::time::Duration::from_secs(3));
-        }
     });
     let input_thread = std::thread::spawn(move || {
         inloop(intx)
