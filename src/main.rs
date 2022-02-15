@@ -30,6 +30,7 @@ pub enum Inloopcmd
     Pause,
     Resume,
     Stop,
+    None,
 }
 
 #[derive(PartialEq)]
@@ -128,7 +129,7 @@ fn init(engine_state : p_engine::PEngine) -> (std::thread::JoinHandle<()>, std::
     let (outx, ourx) : (Sender<String>, Receiver<String>) = mpsc::channel();
     let phys_thread = std::thread::spawn(move || {
         println!("Physics thread started");
-        p_loop(engine_state , bodytx)
+        p_loop(engine_state , bodytx, inrx, outx)
         
     });
     let rend_thread = std::thread::spawn(move || {
@@ -146,12 +147,48 @@ fn init(engine_state : p_engine::PEngine) -> (std::thread::JoinHandle<()>, std::
     
 }
 
-fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::SyncSender<p_engine::PEngine>) 
+fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::SyncSender<p_engine::PEngine>, inrx : std::sync::mpsc::Receiver<Inloopcmd>, outx : std::sync::mpsc::Sender<String>) 
 {
     engine_state.worldstate = p_engine::PEngineState::Running;
     while engine_state.worldstate != p_engine::PEngineState::Stopped
     {
-        if engine_state.worldstate == p_engine::PEngineState::Paused
+
+
+        let cmd = inrx.try_recv().unwrap_or_else(|_| 
+        {
+            Inloopcmd::None
+        });
+        match cmd {
+            Inloopcmd::None => (),
+            Inloopcmd::Pause => engine_state.worldstate = p_engine::PEngineState::Paused,
+            Inloopcmd::Resume => engine_state.worldstate = p_engine::PEngineState::Running,
+            Inloopcmd::Stop => {
+                engine_state.worldstate = p_engine::PEngineState::Stopped;
+                outx.send("STOP".to_string()).unwrap()
+
+            }
+            Inloopcmd::GetBodyInfo(id) => {
+                if id > engine_state.bodycount || id < 0
+                {
+                    outx.send("ID is too large or too small".to_string()).unwrap()
+                }
+                else
+                {
+                    outx.send(engine_state.world.get_body_list()[id as usize].stringify()).unwrap()
+                }
+            }
+            Inloopcmd::GetBodyList => {
+                let mut out = String::new();
+                for body in engine_state.world.get_body_list()
+                {
+                    out += format!("{} \n", &body.name).as_str();
+                }
+                outx.send(out).unwrap()
+
+            }
+            Inloopcmd::GetSimTicks => outx.send(format!("{}", &engine_state.simticks)).unwrap()
+        }
+        if engine_state.worldstate == p_engine::PEngineState::Paused || engine_state.worldstate == p_engine::PEngineState::Stopped
         {
             continue;
         }
@@ -178,7 +215,7 @@ fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::SyncSe
     println!("ticks ran: {0}", engine_state.simticks);
     for bodies in engine_state.world.get_body_list()
     {
-        println!("name : {0} \n position : [x: {1}; y: {2}; z: {3}] \n velocity : [xv: {4}; yv: {5}; zv: {6}]  \n \n \n", bodies.name, bodies.position.x, bodies.position.y, bodies.position.z, bodies.velocity.x, bodies.velocity.y, bodies.velocity.z );
+        println!("{}", bodies.stringify());
     }
 
 }
@@ -192,7 +229,7 @@ fn inloop(cmdsend : std::sync::mpsc::SyncSender<Inloopcmd>, cmdres : std::sync::
             let mut response = String::new();
             let stdin = io::stdin();
             stdin.read_line(&mut response).unwrap();
-            match response.as_str()
+            match &response[0..response.len() - 2]
             {
                 "help" => println!("Available Commands:\n getsimticks: Return the current physics iteration.\n getbodylist: Return list of all bodies currently being simulated.\n getbodyinfo: returns information about a body determined by its ID on the list.\n pause: pause the simulation.\n resume: resumes the simulation.\n stop: interrupts and stops the program."),
                 "getsimticks" => cmdsend.send(Inloopcmd::GetSimTicks).unwrap(),
@@ -201,7 +238,7 @@ fn inloop(cmdsend : std::sync::mpsc::SyncSender<Inloopcmd>, cmdres : std::sync::
                     let mut bid = String::new();
                     println!("Enter ID:");
                     stdin.read_line(&mut bid).unwrap();
-                    let integer = bid.parse::<i64>().unwrap_or_else(|_|
+                    let integer = bid[0..bid.len() - 2].parse::<i64>().unwrap_or_else(|_|
                         {
                             println!("failed to parse to number, defaulting to 0");
                             std::thread::sleep(std::time::Duration::from_millis(500));
@@ -223,10 +260,18 @@ fn inloop(cmdsend : std::sync::mpsc::SyncSender<Inloopcmd>, cmdres : std::sync::
     {
         let res = match cmdres.try_recv()
         {
-            
+            Ok(result) => result,
+            Err(error) => match error
+            {
+                std::sync::mpsc::TryRecvError::Empty => continue,
+                std::sync::mpsc::TryRecvError::Disconnected => return
+
+            }
 
 
         };
+
+        println!("{}", res);
 
 
 

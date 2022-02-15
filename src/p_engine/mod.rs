@@ -144,3 +144,10 @@ pub struct Body
 
 
 }
+
+impl Body{
+    pub fn stringify(&self) -> String
+    {
+        format!("\nname : {0} \n position : [x: {1}; y: {2}; z: {3}] \n velocity : [xv: {4}; yv: {5}; zv: {6}]  \n \n \n", self.name, self.position.x, self.position.y, self.position.z, self.velocity.x, self.velocity.y, self.velocity.z).to_string()
+    }
+}
