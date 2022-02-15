@@ -11,15 +11,26 @@ pub mod p_engine;
 pub mod constants;
 pub mod ch_com;
 
-
+use std::io;
 use chrono::{NaiveDateTime};
 use std::fs;
 use serde_json::{Value};
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 use std::sync::mpsc;
-use std::sync::mpsc::{Sender, Receiver};
+use std::sync::Arc;
+use std::sync::mpsc::{SyncSender, Receiver, Sender};
 
+#[derive(PartialEq)]
+pub enum Inloopcmd
+{
+    GetSimTicks,
+    GetBodyList,
+    GetBodyInfo(i64),
+    Pause,
+    Resume,
+    Stop,
+}
 
 #[derive(PartialEq)]
 pub enum GlobalState
@@ -32,13 +43,17 @@ pub enum GlobalState
     Stopped,
 }
 
+
 //static prog_state : &'static std::sync::Arc<GlobalState> = &std::sync::Arc::new(GlobalState::Unloaded);
 fn main() {
     
     #[derive(Serialize, Deserialize)]
-    struct BodyList{
-    list: Vec<(String, f32, f64, [f64 ; 3], [f64 ; 3])>
+    struct JInfo
+    {
+        name : String,
+        date : String
     }
+
     let mut currpath = std::env::current_dir().unwrap();
     currpath.push("Sol.json");
     println!("{0}", currpath.to_str().unwrap());
@@ -46,40 +61,56 @@ fn main() {
 
     let file_dat = fs::File::open(&currpath).unwrap();
     let mut parse_res : Value = serde_json::from_reader(file_dat).expect("JSON failed yo");
+    let p_info : JInfo = serde_json::from_value(parse_res["Info"].take()).unwrap();
+
     
     
     
-    let p_date = NaiveDateTime::parse_from_str("2000-01-01 00:00:01", "%Y-%m-%d %H:%M:%S").unwrap();
+    let p_date = NaiveDateTime::parse_from_str(p_info.date.as_str(), "%Y-%m-%d %H:%M:%S").unwrap();
 
 
-    let bodies = parse_res.get_mut("Bodies").unwrap();
-    let body_list : BodyList = serde_json::from_value(bodies.take()).expect("You fucked up son");
+    //let bodies = ;
+    //let body_list : BodyList = serde_json::from_value(bodies.take()).expect("You fucked up son");
     //**prog_state = GlobalState::Loading;
     phys_engine.worldstate = p_engine::PEngineState::Loading;
-    phys_engine.world.name = "Solar System".to_string();//p_name.to_string();
+    phys_engine.world.name = p_info.name;//p_name.to_string();
     phys_engine.timestamp = p_date.timestamp();
-    for members in body_list.list
+
+    #[derive(Debug, Deserialize, Serialize)]
+    struct JBody
     {
-        let position_arr = members.3;
-        let velocity = members.4;
+        name: String,
+        radius: f32,
+        mass: f64,
+        location: [f64 ; 3],
+        velocity: [f64 ; 3]
+    }
+    let jbody_list : Vec<JBody> = serde_json::from_value(parse_res["Bodies"].take()).unwrap();
+
+    for members in jbody_list
+    {
+        let position_arr : [f64 ; 3] = members.location;
+        let velocity : [f64 ; 3] = members.velocity;
         phys_engine.world.bodylist.push(p_engine::Body
             {
                 bID : phys_engine.bodycount,
-                name : members.0,
-                mass : members.2,
-                radius : members.1,
+                name : members.name,
+                mass : members.mass,
+                radius : members.radius,
                 position : math::vec::Vec3::new(position_arr[0], position_arr[1], position_arr[2]),
                 velocity : math::vec::Vec3::new(velocity[0], velocity[1], velocity[2])
 
             });
             phys_engine.bodycount += 1;
     }
+    
     phys_engine.worldstate = p_engine::PEngineState::Loaded;
     println!("{0}", phys_engine.bodycount);
     let (p_thread, r_thread, i_thread) = init(phys_engine);
 
     p_thread.join().unwrap();
     r_thread.join().unwrap();
+    println!("Engine is shutting down, Press Any Keys to continue.");
     i_thread.join().unwrap();
     return;
 
@@ -92,8 +123,9 @@ fn main() {
 }
 fn init(engine_state : p_engine::PEngine) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
 {
-    let (bodytx, bodyrx) : ( Sender<p_engine::PEngine> , Receiver<p_engine::PEngine> ) = mpsc::channel();
-    let (intx, inrx) : (Sender<(String, String)>, Receiver<(String, String)>) = mpsc::channel();
+    let (bodytx, bodyrx) : ( SyncSender<p_engine::PEngine> , Receiver<p_engine::PEngine> ) = mpsc::sync_channel(1);
+    let (intx, inrx) : (SyncSender<Inloopcmd>, Receiver<Inloopcmd>) = mpsc::sync_channel(1);
+    let (outx, ourx) : (Sender<String>, Receiver<String>) = mpsc::channel();
     let phys_thread = std::thread::spawn(move || {
         println!("Physics thread started");
         p_loop(engine_state , bodytx)
@@ -104,7 +136,7 @@ fn init(engine_state : p_engine::PEngine) -> (std::thread::JoinHandle<()>, std::
         println!("Render thread started");
     });
     let input_thread = std::thread::spawn(move || {
-        inloop(intx)
+        inloop(intx,ourx)
 
     });
 
@@ -114,7 +146,7 @@ fn init(engine_state : p_engine::PEngine) -> (std::thread::JoinHandle<()>, std::
     
 }
 
-fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::Sender<p_engine::PEngine>) 
+fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::SyncSender<p_engine::PEngine>) 
 {
     engine_state.worldstate = p_engine::PEngineState::Running;
     while engine_state.worldstate != p_engine::PEngineState::Stopped
@@ -123,21 +155,81 @@ fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::Sender
         {
             continue;
         }
-        if engine_state.simticks >= 5256000
+        if engine_state.simticks >= 31540000
         {
             engine_state.worldstate = p_engine::PEngineState::Stopped;
         }
         engine_state.process_physics();
         engine_state.simticks = engine_state.simticks + 1;
-        bodytx.send(engine_state.clone()).expect("Connection to reciever lost!");
+        match bodytx.try_send(engine_state.clone())
+        {
+            Ok(success) => success,
+            Err(error) => match error {
+                std::sync::mpsc::TrySendError::Full(_) => continue, //this does not break the code, therefore it can continue
+                std::sync::mpsc::TrySendError::Disconnected(_) => panic!("Reciever to render loop unexpectedly closed!")
+
+            }
+
+
+        };
 
 
     }
     println!("ticks ran: {0}", engine_state.simticks);
+    for bodies in engine_state.world.get_body_list()
+    {
+        println!("name : {0} \n position : [x: {1}; y: {2}; z: {3}] \n velocity : [xv: {4}; yv: {5}; zv: {6}]  \n \n \n", bodies.name, bodies.position.x, bodies.position.y, bodies.position.z, bodies.velocity.x, bodies.velocity.y, bodies.velocity.z );
+    }
 
 }
-fn inloop(cmdsend : std::sync::mpsc::Sender<(String, String)>)
+fn inloop(cmdsend : std::sync::mpsc::SyncSender<Inloopcmd>, cmdres : std::sync::mpsc::Receiver<String>)
 {
-    return;
+    let stop_sig = false;
+    let _input = std::thread::spawn(move || {
+        while !&stop_sig
+        {
+            
+            let mut response = String::new();
+            let stdin = io::stdin();
+            stdin.read_line(&mut response).unwrap();
+            match response.as_str()
+            {
+                "help" => println!("Available Commands:\n getsimticks: Return the current physics iteration.\n getbodylist: Return list of all bodies currently being simulated.\n getbodyinfo: returns information about a body determined by its ID on the list.\n pause: pause the simulation.\n resume: resumes the simulation.\n stop: interrupts and stops the program."),
+                "getsimticks" => cmdsend.send(Inloopcmd::GetSimTicks).unwrap(),
+                "getbodylist" => cmdsend.send(Inloopcmd::GetBodyList).unwrap(),
+                "getbodyinfo" => {
+                    let mut bid = String::new();
+                    println!("Enter ID:");
+                    stdin.read_line(&mut bid).unwrap();
+                    let integer = bid.parse::<i64>().unwrap_or_else(|_|
+                        {
+                            println!("failed to parse to number, defaulting to 0");
+                            std::thread::sleep(std::time::Duration::from_millis(500));
+                            0
+
+                        });
+                    cmdsend.send(Inloopcmd::GetBodyInfo(integer)).unwrap()
+                    
+
+                }
+                "pause" => cmdsend.send(Inloopcmd::Pause).unwrap(),
+                "resume" => cmdsend.send(Inloopcmd::Resume).unwrap(),
+                "stop" => cmdsend.send(Inloopcmd::Stop).unwrap(),
+                &_ => println!("Unrecognized Command")
+            }
+        }
+    });
+    while !stop_sig
+    {
+        let res = match cmdres.try_recv()
+        {
+            
+
+
+        };
+
+
+
+    }
 
 }

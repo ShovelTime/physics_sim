@@ -27,13 +27,12 @@ impl PEngine
 {
     pub fn process_physics(&mut self)
     {
-        /*
         let mut newbodylist = Vec::<Body>::new();
         
         for bodies in self.world.get_body_list().iter() {
-            let accel1 = self.accel_loop(&bodies.position, &bodies.name);
+            let accel1 = self.accel_loop(&bodies.position, &bodies.bID);
             let new_pos = bodies.position + bodies.velocity * self.time_step + ((accel1 * self.time_step.powi(2)) / 2.0f64);
-            let accel2 = self.accel_loop(&new_pos, &bodies.name);
+            let accel2 = self.accel_loop(&new_pos, &bodies.bID);
             let new_vel = bodies.velocity + ((accel1 + accel2) / 2.0f64) * self.time_step;
             let new_body = Body
             {
@@ -49,7 +48,8 @@ impl PEngine
             newbodylist.push(new_body);
         }
         self.world.bodylist = newbodylist;
-        */
+        
+        /*
         let mut newbodylist = self.world.get_body_list_cpy().unwrap();
         for bodies in newbodylist.iter_mut() {
             //Velocity Verlet Integration
@@ -61,6 +61,7 @@ impl PEngine
             bodies.velocity = new_vel;
         }
         self.world.bodylist = newbodylist;
+        */
         
     }
     fn accel_loop(&self, orig : &vec::Vec3, bid : &i64) -> vec::Vec3
@@ -93,7 +94,7 @@ impl Default for PEngine
             timestamp : 0,
             simticks : 0,
             worldstate : PEngineState::Unloaded,
-            time_step : 60.0f64,
+            time_step : 1.0f64,
             world : World::default()
             
         }

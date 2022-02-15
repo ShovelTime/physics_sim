@@ -85,7 +85,7 @@ impl phys::Phys for Vec3
     }
     fn get_acceleration_vec(&self , tgt: &p_engine::Body) -> Vec3
     {
-        let first_arg = constants::GRAV_CONST + &tgt.mass;
+        let first_arg = constants::GRAV_CONST * &tgt.mass;
         let dist = self.get_distance_vec(&tgt.position);
         let mag = self.get_distance_sum(&tgt.position).powi(3);
 
