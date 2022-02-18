@@ -7,12 +7,27 @@ use glium::Surface;
 use glium::DrawParameters;
 use glium::Depth;
 use std;
+use crate::math::phys::Phys;
 use glutin::platform::windows::EventLoopExtWindows;
 use crate::math::vec::Vec3;
 use crate::p_engine;
 
 pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
 {
+    #[derive(Copy, Clone)]
+    struct Normals {
+        position : [f32; 3]
+    }
+    implement_vertex!(Normals, position);
+    #[derive(Copy, Clone)]
+    struct Vertex {
+        position : [f32; 3],
+        color : [f32; 3]
+    }
+    implement_vertex!(Vertex, position, color);
+
+
+
     let eventloop = glutin::event_loop::EventLoop::<glutin::event::Event<glutin::event::WindowEvent>>::new_any_thread();
     let wb = glutin::window::WindowBuilder::new();
     let cb = glutin::ContextBuilder::new().with_depth_buffer(24);
@@ -27,19 +42,20 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
         .. Default::default()
     };
 
+    let first_iter = bodyrx.recv().unwrap();
+    
+    let farther_object = &first_iter.world.bodylist[&first_iter.world.bodylist.len() - 1];
+    let dist_scale = farther_object.position.get_distance_sum(&Vec3::default());
+    println!("{}" , dist_scale);
 
-    let (mut vertices, normalsvec, texvec) = lin_alg::create_sphere(2.0);
+
+    let (mut vertices, normalsvec, tex) : (Vec<Vec3>, Vec<Vec3>, Vec<f32>) = lin_alg::create_sphere(2.0);
     for iter in 0..vertices.len(){
         vertices[iter] = vertices[iter].fast_normalize();
     }
 
     let vertex_buffer = {
-        #[derive(Copy, Clone)]
-        struct Vertex {
-            position : [f32; 3],
-            color : [f32; 3]
-        }
-        implement_vertex!(Vertex, position, color);
+
         let size : usize = vertices.len();
         let mut vertex_buf = Vec::with_capacity(size);
         for index in 0..size
@@ -53,12 +69,9 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
         glium::VertexBuffer::new(&display, &vertex_buf).unwrap()
     };
     
+
     let normals = {
-        #[derive(Copy, Clone)]
-        struct Normals {
-            position : [f32; 3]
-        }
-        implement_vertex!(Normals, position);
+
 
         let size : usize = normalsvec.len();
         let mut normals_buf = Vec::with_capacity(size);
@@ -72,7 +85,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
         glium::VertexBuffer::new(&display, &normals_buf).unwrap()
     };
     
-    let index_buffer = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
+    let index_buffer = glium::index::NoIndices(glium::index::PrimitiveType::TriangleFan);
     let program = program!(&display, 410 => {vertex: "
     #version 410
     uniform mat4 matrix;
@@ -131,6 +144,20 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
             },
             _ => glutin::event_loop::ControlFlow::Poll,
         };
+        let incoming = bodyrx.try_recv();
+        match incoming {
+            Ok(res) => {
+                let blist = res.world.get_body_list();
+                for body in blist
+                {
+                    
+                }
+            }
+            Err(err) => match err {
+                std::sync::mpsc::TryRecvError::Disconnected => return,
+                std::sync::mpsc::TryRecvError::Empty => ()
+            }
+        } 
     });
 
     /*

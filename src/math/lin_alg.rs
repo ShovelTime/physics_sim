@@ -3,8 +3,8 @@ use crate::constants::PI;
 
 pub fn create_sphere(radius : f32) -> (Vec<Vec3>, Vec<Vec3>, Vec<f32>) // Vertex vector, normals vector, tex coords vector.
 {
-    let sectorcount : i32 = 30;
-    let stackcount : i32 = 30;
+    let sectorcount : i32 = 100;
+    let stackcount : i32 = 100;
 
     let (mut x, mut y, mut z , mut xy) : (f32, f32, f32, f32);
     let (mut nx, mut ny, mut nz) : (f32, f32, f32);
@@ -54,8 +54,8 @@ pub fn create_sphere(radius : f32) -> (Vec<Vec3>, Vec<Vec3>, Vec<f32>) // Vertex
 
 pub fn fast_sphere(radius : f32) -> Vec<Vec3> // only computes vertices coordinate.
 {
-    let sectorcount : i32 = 30;
-    let stackcount : i32 = 30;
+    let sectorcount : i32 = 100;
+    let stackcount : i32 = 100;
     let (mut x, mut y, mut z , mut xy) : (f32, f32, f32, f32);
     let (mut sectorangle, mut stackangle) : (f32, f32);
     let mut vertexvec = Vec::new();
@@ -78,6 +78,19 @@ pub fn fast_sphere(radius : f32) -> Vec<Vec3> // only computes vertices coordina
 
         } 
 
+    }
+    vertexvec
+}
+
+pub fn fast_circle(radius : f64) -> Vec<Vec3>
+{
+    let twicepi = PI * 2.0;
+    let mut vertexvec : Vec<Vec3> =  Vec::new();
+    let sectorcount = 100;
+    //vertexvec.push(Vec3::new(0.0,0.0,0.0));
+    for i in 0..sectorcount
+    {
+        vertexvec.push(Vec3::new(radius * (i as f64 * twicepi / sectorcount as f64).cos(), radius * (i as f64 * twicepi / sectorcount as f64).sin(), 0.0 ));
     }
     vertexvec
 }

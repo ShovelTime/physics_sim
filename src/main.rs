@@ -153,15 +153,27 @@ fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::SyncSe
     while engine_state.worldstate != p_engine::PEngineState::Stopped
     {
 
+        let cmd;
 
-        let cmd = inrx.try_recv().unwrap_or_else(|_| 
+        if engine_state.worldstate == p_engine::PEngineState::Paused
         {
-            Inloopcmd::None
-        });
+            cmd = inrx.recv().unwrap_or_else(|_| // pause the thread until a response is sent for us to resume
+                {
+                    Inloopcmd::None
+                });
+        }
+        else 
+        {
+            cmd = inrx.try_recv().unwrap_or_else(|_| 
+                {
+                    Inloopcmd::None
+                });
+        }
+
         match cmd {
             Inloopcmd::None => (),
-            Inloopcmd::Pause => engine_state.worldstate = p_engine::PEngineState::Paused,
-            Inloopcmd::Resume => engine_state.worldstate = p_engine::PEngineState::Running,
+            Inloopcmd::Pause => {engine_state.worldstate = p_engine::PEngineState::Paused; outx.send(format!("Simulation Paused")).unwrap()}
+            Inloopcmd::Resume => {engine_state.worldstate = p_engine::PEngineState::Running; outx.send(format!("Simulation Resumed")).unwrap()}
             Inloopcmd::Stop => {
                 engine_state.worldstate = p_engine::PEngineState::Stopped;
                 outx.send("STOP".to_string()).unwrap()
@@ -181,7 +193,7 @@ fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::SyncSe
                 let mut out = String::new();
                 for body in engine_state.world.get_body_list()
                 {
-                    out += format!("{} \n", &body.name).as_str();
+                    out += format!("[{0}: {1}] \n", &body.bID, &body.name).as_str();
                 }
                 outx.send(out).unwrap()
 
@@ -251,23 +263,17 @@ fn inloop(cmdsend : std::sync::mpsc::SyncSender<Inloopcmd>, cmdres : std::sync::
                 }
                 "pause" => cmdsend.send(Inloopcmd::Pause).unwrap(),
                 "resume" => cmdsend.send(Inloopcmd::Resume).unwrap(),
-                "stop" => cmdsend.send(Inloopcmd::Stop).unwrap(),
+                "stop" => {cmdsend.send(Inloopcmd::Stop).unwrap(); return}
                 &_ => println!("Unrecognized Command")
             }
         }
     });
     while !stop_sig
     {
-        let res = match cmdres.try_recv()
+        let res = match cmdres.recv()
         {
             Ok(result) => result,
-            Err(error) => match error
-            {
-                std::sync::mpsc::TryRecvError::Empty => continue,
-                std::sync::mpsc::TryRecvError::Disconnected => return
-
-            }
-
+            Err(_error) => return
 
         };
 
