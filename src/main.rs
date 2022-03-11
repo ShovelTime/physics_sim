@@ -244,8 +244,18 @@ fn inloop(cmdsend : std::sync::mpsc::SyncSender<Inloopcmd>, cmdres : std::sync::
             match &response[0..response.len() - 2]
             {
                 "help" => println!("Available Commands:\n getsimticks: Return the current physics iteration.\n getbodylist: Return list of all bodies currently being simulated.\n getbodyinfo: returns information about a body determined by its ID on the list.\n pause: pause the simulation.\n resume: resumes the simulation.\n stop: interrupts and stops the program."),
-                "getsimticks" => cmdsend.send(Inloopcmd::GetSimTicks).unwrap(),
-                "getbodylist" => cmdsend.send(Inloopcmd::GetBodyList).unwrap(),
+                "getsimticks" => cmdsend.send(Inloopcmd::GetSimTicks).unwrap_or_else(|_|
+                    {
+                        println!("p_engine disconnected, returning.");
+                        return
+                    }
+                ),
+                "getbodylist" => cmdsend.send(Inloopcmd::GetBodyList).unwrap_or_else(|_|
+                    {
+                        println!("p_engine disconnected, returning.");
+                        return
+                    }
+                ),
                 "getbodyinfo" => {
                     let mut bid = String::new();
                     println!("Enter ID:");
@@ -257,13 +267,30 @@ fn inloop(cmdsend : std::sync::mpsc::SyncSender<Inloopcmd>, cmdres : std::sync::
                             0
 
                         });
-                    cmdsend.send(Inloopcmd::GetBodyInfo(integer)).unwrap()
+                    cmdsend.send(Inloopcmd::GetBodyInfo(integer)).unwrap_or_else(|_|
+                        {
+                            println!("p_engine disconnected, returning.");
+                            return
+                        }
+                    )
                     
 
                 }
-                "pause" => cmdsend.send(Inloopcmd::Pause).unwrap(),
-                "resume" => cmdsend.send(Inloopcmd::Resume).unwrap(),
-                "stop" => {cmdsend.send(Inloopcmd::Stop).unwrap(); return}
+                "pause" => cmdsend.send(Inloopcmd::Pause).unwrap_or_else(|_| 
+                {
+                    println!("p_engine disconnected, returning.");
+                    return
+                }),
+                "resume" => cmdsend.send(Inloopcmd::Resume).unwrap_or_else(|_| 
+                {
+                    println!("p_engine disconnected, returning.");
+                    return
+
+                }),
+                "stop" => {cmdsend.send(Inloopcmd::Stop).unwrap_or_else(|_| 
+                {
+                    return
+                }); return}
                 &_ => println!("Unrecognized Command")
             }
         }

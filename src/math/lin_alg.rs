@@ -1,7 +1,7 @@
 use crate::math::vec::Vec3;
 use crate::constants::PI;
 
-pub fn create_sphere(radius : f32) -> (Vec<Vec3>, Vec<Vec3>, Vec<f32>) // Vertex vector, normals vector, tex coords vector.
+pub fn create_sphere(radius : f32, offset : Vec3) -> (Vec<Vec3>, Vec<Vec3>, Vec<f32>) // Vertex vector, normals vector, tex coords vector.
 {
     let sectorcount : i32 = 100;
     let stackcount : i32 = 100;
@@ -25,13 +25,13 @@ pub fn create_sphere(radius : f32) -> (Vec<Vec3>, Vec<Vec3>, Vec<f32>) // Vertex
     {
         stackangle = (PI / 2.0) as f32 - (iter as f32) * stackstep;
         xy = radius * stackangle.cos();
-        z = radius * stackangle.sin();
+        z = radius * stackangle.sin() + offset.z as f32;
         for iter2 in 0..sectorcount
         {
             sectorangle = iter2 as f32 * sectorstep;
 
-            x = xy * sectorangle.cos();
-            y = xy * sectorangle.sin();
+            x = xy * sectorangle.cos() + offset.x as f32;
+            y = xy * sectorangle.sin() + offset.y as f32;
             vertexvec.push(Vec3::new(x as f64, y as f64, z as f64));
 
             nx = x * length_inv;

@@ -46,45 +46,17 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
     
     let farther_object = &first_iter.world.bodylist[&first_iter.world.bodylist.len() - 1];
     let dist_scale = farther_object.position.get_distance_sum(&Vec3::default());
+    let fast_scalar = 1.0 / dist_scale; //minimize amount of divisions we will need to do.
     println!("{}" , dist_scale);
 
 
-    let (mut vertices, normalsvec, tex) : (Vec<Vec3>, Vec<Vec3>, Vec<f32>) = lin_alg::create_sphere(2.0);
+    let (mut vertices, normalsvec, tex) : (Vec<Vec3>, Vec<Vec3>, Vec<f32>) = lin_alg::create_sphere(2.0, Vec3::default());
     for iter in 0..vertices.len(){
         vertices[iter] = vertices[iter].fast_normalize();
     }
 
-    let vertex_buffer = {
+ 
 
-        let size : usize = vertices.len();
-        let mut vertex_buf = Vec::with_capacity(size);
-        for index in 0..size
-        {
-            let curr_vertices : &Vec3 = &vertices[index];
-            vertex_buf.push(Vertex{
-                position : [curr_vertices.x as f32, curr_vertices.y as f32, curr_vertices.z as f32],
-                color : [1.0, 1.0, 1.0]
-            })
-        }
-        glium::VertexBuffer::new(&display, &vertex_buf).unwrap()
-    };
-    
-
-    let normals = {
-
-
-        let size : usize = normalsvec.len();
-        let mut normals_buf = Vec::with_capacity(size);
-        for index in 0..size
-        {
-            let curr_vertices : &Vec3 = &vertices[index];
-            normals_buf.push(Normals{
-                position : [curr_vertices.x as f32, curr_vertices.y as f32, curr_vertices.z as f32]
-            });
-        }
-        glium::VertexBuffer::new(&display, &normals_buf).unwrap()
-    };
-    
     let index_buffer = glium::index::NoIndices(glium::index::PrimitiveType::TriangleFan);
     let program = program!(&display, 410 => {vertex: "
     #version 410
@@ -110,8 +82,42 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
     }
     "}).unwrap();
 
+    let create_vertex_buffer = {
 
-    let draw = move || {
+        let size : usize = vertices.len();
+        let mut vertex_buf = Vec::with_capacity(size);
+        for index in 0..size
+        {
+            let curr_vertices : &Vec3 = &vertices[index];
+            vertex_buf.push(Vertex{
+                position : [curr_vertices.x as f32, curr_vertices.y as f32, curr_vertices.z as f32],
+                color : [1.0, 1.0, 1.0]
+            })
+        }
+        glium::VertexBuffer::new(&display, &vertex_buf).unwrap()
+    };
+
+    let vertex_buffer = create_vertex_buffer(vertices);
+    
+
+    let create_normals = {
+
+
+        let size : usize = normalsvec.len();
+        let mut normals_buf = Vec::with_capacity(size);
+        for index in 0..size
+        {
+            let curr_vertices : &Vec3 = &vertices[index];
+            normals_buf.push(Normals{
+                position : [curr_vertices.x as f32, curr_vertices.y as f32, curr_vertices.z as f32]
+            });
+        }
+        glium::VertexBuffer::new(&display, &normals_buf).unwrap()
+    };
+    
+    let normals = create_normals(normalsvec);
+
+    let draw = move |vertex_buffer, normals| {
         let uniforms = uniform! {
             matrix: [
                 [1.0, 0.0, 0.0, 0.0],
@@ -128,38 +134,43 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
         res.finish().unwrap();
     };
 
-    draw();
+    draw(vertex_buffer, normals);
 
     eventloop.run(move |event, _, control_flow| {
-        *control_flow = match event {
-            glutin::event::Event::WindowEvent { event, .. } => match event {
-                // Break from the main loop when the window is closed.
-                glutin::event::WindowEvent::CloseRequested => glutin::event_loop::ControlFlow::Exit,
-                // Redraw the triangle when the window is resized.
-                glutin::event::WindowEvent::Resized(..) => {
-                    draw();
-                    glutin::event_loop::ControlFlow::Poll
-                },
-                _ => glutin::event_loop::ControlFlow::Poll,
-            },
-            _ => glutin::event_loop::ControlFlow::Poll,
-        };
         let incoming = bodyrx.try_recv();
         match incoming {
             Ok(res) => {
                 let blist = res.world.get_body_list();
                 for body in blist
                 {
-                    
+                    let r_space_vec : Vec3 = body.position * fast_scalar;
+                    let sphere_r_coords = lin_alg::create_sphere(0.05, r_space_vec);
+                    let r_vert_buf = create_vertex_buffer(sphere_r_coords.0);
+                    let r_norm_buf = create_normals(sphere_r_coords.1);
+                    draw(r_vert_buf, r_norm_buf);
+
                 }
             }
             Err(err) => match err {
-                std::sync::mpsc::TryRecvError::Disconnected => return,
+                std::sync::mpsc::TryRecvError::Disconnected => panic!("Fucking hell man just leave"),
                 std::sync::mpsc::TryRecvError::Empty => ()
             }
         } 
-    });
+        *control_flow = match event {
+            glutin::event::Event::WindowEvent { event, .. } => match event {
+                // Break from the main loop when the window is closed.
+                glutin::event::WindowEvent::CloseRequested => glutin::event_loop::ControlFlow::Exit,
+                // Redraw the triangle when the window is resized.
+                glutin::event::WindowEvent::Resized(..) => {
+                    glutin::event_loop::ControlFlow::Poll
+                },
+                _ => glutin::event_loop::ControlFlow::Poll,
+            },
+            _ => glutin::event_loop::ControlFlow::Poll,
+        };
 
+    });
+}
     /*
     let eventloop = winit::event_loop::EventLoop::<winit::event::Event<winit::event::WindowEvent>>::new_any_thread();
     let window;
@@ -229,4 +240,3 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
     });
     */
 
-}
