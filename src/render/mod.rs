@@ -7,6 +7,7 @@ use glium::Surface;
 use glium::DrawParameters;
 use glium::Depth;
 use std;
+use std::time::{Duration, Instant};
 use crate::math::phys::Phys;
 use glutin::platform::windows::EventLoopExtWindows;
 use crate::math::vec::Vec3;
@@ -82,7 +83,8 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
     }
     "}).unwrap();
 
-    let create_vertex_buffer = {
+    fn create_vertex_buffer(vertices : &Vec<Vec3>, display : &glium::Display) -> glium::VertexBuffer<Vertex>
+    {
 
         let size : usize = vertices.len();
         let mut vertex_buf = Vec::with_capacity(size);
@@ -94,13 +96,15 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                 color : [1.0, 1.0, 1.0]
             })
         }
-        glium::VertexBuffer::new(&display, &vertex_buf).unwrap()
-    };
-
-    let vertex_buffer = create_vertex_buffer(vertices);
+        glium::VertexBuffer::new(display, &vertex_buf).unwrap()
+    }
     
 
-    let create_normals = {
+    let vertex_buffer = create_vertex_buffer(&vertices, &display);
+    
+
+    fn create_normals(normalsvec : &Vec<Vec3>, vertices : &Vec<Vec3>, display : &glium::Display) -> glium::VertexBuffer<Normals>
+    {
 
 
         let size : usize = normalsvec.len();
@@ -112,12 +116,13 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                 position : [curr_vertices.x as f32, curr_vertices.y as f32, curr_vertices.z as f32]
             });
         }
-        glium::VertexBuffer::new(&display, &normals_buf).unwrap()
-    };
+        glium::VertexBuffer::new(display, &normals_buf).unwrap()
+    }
     
-    let normals = create_normals(normalsvec);
+    let normals = create_normals(&normalsvec, &vertices, &display);
 
-    let draw = move |vertex_buffer, normals| {
+    fn draw(display : &glium::Display, vertex_buffer : &glium::VertexBuffer<Vertex>, normals : &glium::VertexBuffer<Normals>, index_buffer : &glium::index::NoIndices, program : &glium::Program)  
+    {
         let uniforms = uniform! {
             matrix: [
                 [1.0, 0.0, 0.0, 0.0],
@@ -130,11 +135,11 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
         let mut res = display.draw();
         res.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
 
-        res.draw((&vertex_buffer, &normals), &index_buffer, &program, &uniforms, &Default::default()).unwrap();
+        res.draw((vertex_buffer, normals), index_buffer, program, &uniforms, &Default::default()).unwrap();
         res.finish().unwrap();
     };
 
-    draw(vertex_buffer, normals);
+    draw(&display, &vertex_buffer, &normals, &index_buffer, &program);
 
     eventloop.run(move |event, _, control_flow| {
         let incoming = bodyrx.try_recv();
@@ -145,9 +150,9 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                 {
                     let r_space_vec : Vec3 = body.position * fast_scalar;
                     let sphere_r_coords = lin_alg::create_sphere(0.05, r_space_vec);
-                    let r_vert_buf = create_vertex_buffer(sphere_r_coords.0);
-                    let r_norm_buf = create_normals(sphere_r_coords.1);
-                    draw(r_vert_buf, r_norm_buf);
+                    let r_vert_buf = create_vertex_buffer(&sphere_r_coords.0, &display);
+                    let r_norm_buf = create_normals(&sphere_r_coords.1, &sphere_r_coords.0, &display);
+                    draw(&display, &r_vert_buf, &r_norm_buf, &index_buffer, &program);
 
                 }
             }
@@ -164,9 +169,9 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                 glutin::event::WindowEvent::Resized(..) => {
                     glutin::event_loop::ControlFlow::Poll
                 },
-                _ => glutin::event_loop::ControlFlow::Poll,
+                _ => glutin::event_loop::ControlFlow::WaitUntil(Instant::now() + Duration::from_millis(16)),
             },
-            _ => glutin::event_loop::ControlFlow::Poll,
+            _ => glutin::event_loop::ControlFlow::WaitUntil(Instant::now() + Duration::from_millis(16)),
         };
 
     });
