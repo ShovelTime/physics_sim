@@ -54,6 +54,32 @@ impl Vec3
     {
         self.fast_div(self.length())
     }
+    pub fn get_distance_vec(&self, other: &Vec3) -> Vec3
+    {
+        Vec3::abs(&(*self - *other))
+    }
+    pub fn get_distance_sum(&self ,other: &Vec3) -> f64
+    {
+        let stage1 = self.get_distance_vec(other);
+        (stage1.x.powi(2) + stage1.y.powi(2) + stage1.z.powi(2)).sqrt()
+
+    }
+
+    pub fn get_direction(&self, other: &Vec3) -> Vec3
+    {
+        self.get_distance_vec(other).normalize()
+    }
+    pub fn get_acceleration_vec(&self , tgt: &p_engine::Body) -> Vec3
+    {
+        let first_arg = constants::GRAV_CONST * &tgt.mass;
+        //let dist = self.get_distance_vec(&tgt.position);
+        let dist = tgt.position - *self;
+        let mag = self.get_distance_sum(&tgt.position).powi(3);
+
+        (dist * first_arg) / mag
+
+
+    }
     //fn to_vec2(self) -> Vec2
     
     //fn to_vec4(self, other : Option<f64>) -> Vec4
@@ -65,35 +91,6 @@ impl Default for Vec3
     {
         Vec3::new( 0.0f64, 0.0f64, 0.0f64)
     }
-}
-impl phys::Phys for Vec3
-{
-    fn get_distance_vec(&self, other: &Vec3) -> Vec3
-    {
-        Vec3::abs(&(*self - *other))
-    }
-    fn get_distance_sum(&self ,other: &Vec3) -> f64
-    {
-        let stage1 = self.get_distance_vec(other);
-        (stage1.x.powi(2) + stage1.y.powi(2) + stage1.z.powi(2)).sqrt()
-
-    }
-
-    fn get_direction(&self, other: &Vec3) -> Vec3
-    {
-        self.get_distance_vec(other).normalize()
-    }
-    fn get_acceleration_vec(&self , tgt: &p_engine::Body) -> Vec3
-    {
-        let first_arg = constants::GRAV_CONST * &tgt.mass;
-        let dist = self.get_distance_vec(&tgt.position);
-        let mag = self.get_distance_sum(&tgt.position).powi(3);
-
-        (dist * first_arg) / mag
-
-
-    }
-
 }
 
 impl std::ops::Index<i32> for Vec3
