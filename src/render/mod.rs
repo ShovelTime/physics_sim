@@ -169,6 +169,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
             Ok(res) => {
                 let mut disp = display.draw();
                 let blist = res.world.get_body_list();
+                let l_indices = glium::index::NoIndices(glium::index::PrimitiveType::LinesList);
                 
                 disp.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
                 for body in blist
