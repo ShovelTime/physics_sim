@@ -167,7 +167,7 @@ impl Body{
     }
     pub fn get_eccentricity_vec(&self, tgt_mass : f64) -> vec::Vec3
     {
-        self.velocity.cross(self.get_specific_ang_momentum_vec()) / self.get_grav_param(tgt_mass)
+        self.velocity.cross(self.get_specific_ang_momentum_vec()) / self.get_grav_param(tgt_mass) - self.position.normalize()()
     }
     pub fn get_eccentricity(&self, tgt_mass : f64) -> f64
     {
@@ -177,7 +177,7 @@ impl Body{
     }
     pub fn get_grav_param(&self, tgt_mass : f64) -> f64
     {
-        constants::GRAV_CONST * (tgt_mass + self.mass)
+        constants::GRAV_CONST * tgt_mass
     }
 
     pub fn get_semimajor_axis(&self ,tgt_mass : f64) -> f64

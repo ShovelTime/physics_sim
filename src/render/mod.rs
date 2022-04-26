@@ -1,6 +1,8 @@
 extern crate glium;
 extern crate glam;
 use crate::math::lin_alg;
+use crate::math::graph;
+
 use glium::{implement_vertex, program, uniform};
 use glium::glutin;
 use glium::Surface;
@@ -148,7 +150,6 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
             [0.0, 0.0, 0.0, 1.0f32]
         ]
     };
-    let mut f_count = 0;
    
     eventloop.run(move |event, _, control_flow| { 
         *control_flow = match event {
@@ -179,7 +180,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                     let r_vert_buf = create_vertex_buffer(&sphere_r_coords.0, &display);
                     let r_norm_buf = create_normals(&sphere_r_coords.1, &sphere_r_coords.0, &display);
                     disp.draw((&r_vert_buf, &r_norm_buf), &index_buffer, &program, &uniforms, &Default::default()).unwrap();
-        
+                    
 
                 }
                 disp.finish().unwrap()
