@@ -148,9 +148,21 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
             [0.0, 0.0, 0.0, 1.0f32]
         ]
     };
-    
+    let mut f_count = 0;
    
-    eventloop.run(move |event, _, control_flow| {
+    eventloop.run(move |event, _, control_flow| { 
+        *control_flow = match event {
+            glutin::event::Event::WindowEvent { event, .. } => match event {
+                // Break from the main loop when the window is closed.
+                glutin::event::WindowEvent::CloseRequested => glutin::event_loop::ControlFlow::Exit,
+                // Redraw the triangle when the window is resized.
+                glutin::event::WindowEvent::Resized(..) => {
+                    glutin::event_loop::ControlFlow::Poll
+                },
+                _ => glutin::event_loop::ControlFlow::Poll,
+            },
+            _ => glutin::event_loop::ControlFlow::Poll,
+        };
         let incoming = bodyrx.try_recv();
         
         match incoming {
@@ -172,22 +184,13 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                 disp.finish().unwrap()
             }
             Err(err) => match err {
-                std::sync::mpsc::TryRecvError::Disconnected => panic!("physics thread killed, exiting"),
+                //std::sync::mpsc::TryRecvError::Disconnected => panic!("physics thread killed, exiting"),
+                std::sync::mpsc::TryRecvError::Disconnected => {
+                    panic!("ControlFlow did not exit!")
+                },
                 std::sync::mpsc::TryRecvError::Empty => ()
             }
-        } 
-        *control_flow = match event {
-            glutin::event::Event::WindowEvent { event, .. } => match event {
-                // Break from the main loop when the window is closed.
-                glutin::event::WindowEvent::CloseRequested => glutin::event_loop::ControlFlow::Exit,
-                // Redraw the triangle when the window is resized.
-                glutin::event::WindowEvent::Resized(..) => {
-                    glutin::event_loop::ControlFlow::Poll
-                },
-                _ => glutin::event_loop::ControlFlow::Poll,
-            },
-            _ => glutin::event_loop::ControlFlow::Poll,
-        };
+        }
 
     });
 }

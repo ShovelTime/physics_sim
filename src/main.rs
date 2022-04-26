@@ -102,6 +102,7 @@ fn main() {
                 velocity : math::vec::Vec3::new(velocity[0], velocity[1], velocity[2])
 
             });
+            phys_engine.world.barycenter_mass += members.mass;
             phys_engine.bodycount += 1;
     }
     
@@ -110,7 +111,6 @@ fn main() {
     let (p_thread, r_thread, i_thread) = init(phys_engine);
 
     p_thread.join().unwrap();
-    r_thread.join().unwrap();
     println!("Engine is shutting down, Press Any Keys to continue.");
     i_thread.join().unwrap();
     return;

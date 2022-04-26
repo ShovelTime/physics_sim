@@ -1,5 +1,6 @@
 use crate::math::vec;
 use crate::math::phys::Phys;
+use crate::constants;
 
 
 #[derive(PartialEq, Clone)]
@@ -68,7 +69,23 @@ impl PEngine
 
     }
 
+
 }
+impl vec::Vec3
+{
+    pub fn get_acceleration_vec(&self , tgt: &Body) -> vec::Vec3
+    {
+        let first_arg = constants::GRAV_CONST * &tgt.mass;
+        //let dist = self.get_distance_vec(&tgt.position);
+        let dist = tgt.position - *self;
+        let mag = self.get_distance_sum(&tgt.position).powi(3);
+
+        (dist * first_arg) / mag
+
+
+    }
+}
+
 
 
 impl Default for PEngine
@@ -93,6 +110,7 @@ pub struct World
 {
     pub name : String,
     pub bodylist : Vec<Body>,
+    pub barycenter_mass : f64,
 
 }
 impl Default for World
@@ -103,6 +121,7 @@ impl Default for World
         {
             name : "World".to_string(),
             bodylist : Vec::new(),
+            barycenter_mass : 0.0
         }
     }
 }
@@ -136,5 +155,40 @@ impl Body{
     pub fn stringify(&self) -> String
     {
         format!("\nname : {0} \n position : [x: {1}; y: {2}; z: {3}] \n velocity : [xv: {4}; yv: {5}; zv: {6}]  \n \n \n", self.name, self.position.x, self.position.y, self.position.z, self.velocity.x, self.velocity.y, self.velocity.z).to_string()
+    }
+    pub fn get_angular_momentum_vec(&self) -> vec::Vec3 // Relative to Barycenter
+    {
+        let mass_scalar = self.velocity * self.mass;
+        self.position.cross(mass_scalar)
+    } 
+    pub fn get_specific_ang_momentum_vec(&self) -> vec::Vec3 // Rel to barycenter
+    {
+        self.position.cross(self.velocity)
+    }
+    pub fn get_eccentricity_vec(&self, tgt_mass : f64) -> vec::Vec3
+    {
+        self.velocity.cross(self.get_specific_ang_momentum_vec()) / self.get_grav_param(tgt_mass)
+    }
+    pub fn get_eccentricity(&self, tgt_mass : f64) -> f64
+    {
+        let ecc_vec = self.get_eccentricity_vec(tgt_mass);
+        ecc_vec.length()
+
+    }
+    pub fn get_grav_param(&self, tgt_mass : f64) -> f64
+    {
+        constants::GRAV_CONST * (tgt_mass + self.mass)
+    }
+
+    pub fn get_semimajor_axis(&self ,tgt_mass : f64) -> f64
+    {
+        let grav_param = self.get_grav_param(tgt_mass);
+        let dist_tobarycenter = self.position.length();
+
+        let first_param = grav_param + dist_tobarycenter;
+        let second_param = 2.0 * grav_param - dist_tobarycenter * self.velocity.length().powi(2);
+        first_param / second_param
+
+
     }
 }

@@ -1,6 +1,3 @@
-use crate::math::phys;
-use crate::p_engine;
-use crate::constants;
 #[derive(Copy, Clone)]
 pub struct Vec3
 {
@@ -69,17 +66,7 @@ impl Vec3
     {
         self.get_distance_vec(other).normalize()
     }
-    pub fn get_acceleration_vec(&self , tgt: &p_engine::Body) -> Vec3
-    {
-        let first_arg = constants::GRAV_CONST * &tgt.mass;
-        //let dist = self.get_distance_vec(&tgt.position);
-        let dist = tgt.position - *self;
-        let mag = self.get_distance_sum(&tgt.position).powi(3);
 
-        (dist * first_arg) / mag
-
-
-    }
     //fn to_vec2(self) -> Vec2
     
     //fn to_vec4(self, other : Option<f64>) -> Vec4
