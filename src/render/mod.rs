@@ -172,7 +172,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                 disp.finish().unwrap()
             }
             Err(err) => match err {
-                std::sync::mpsc::TryRecvError::Disconnected => panic!("Fucking hell man just leave"),
+                std::sync::mpsc::TryRecvError::Disconnected => panic!("physics thread killed, exiting"),
                 std::sync::mpsc::TryRecvError::Empty => ()
             }
         } 
