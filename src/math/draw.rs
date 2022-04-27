@@ -20,7 +20,7 @@ pub fn plot_kepler_orbit(sm_axis : f64, eccentricity : f64, mass_1 : f64, tot_ma
     loop
     {
         curr_step += step_size;
-        let step_rad = curr_step * constants::PI / 180.0;
+        let step_rad : f64 = curr_step * PI / 180.0;
         let polar_coord = (sm_axis * (1.0 - eccentricity.powi(2))) / (1.0 + eccentricity * step_rad.cos());
         plot_table.push(Vec3::new(polar_coord * step_rad.cos(), step_rad.sin(), 0.0));
 

@@ -1,7 +1,6 @@
 extern crate glium;
 extern crate glam;
-use crate::math::lin_alg;
-use crate::math::graph;
+use crate::math::draw;
 
 use glium::{implement_vertex, program, uniform};
 use glium::glutin;
@@ -53,7 +52,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
     println!("{}" , dist_scale);
 
 
-    let (mut vertices, normalsvec, tex) : (Vec<Vec3>, Vec<Vec3>, Vec<f32>) = lin_alg::create_sphere(2.0, Vec3::default());
+    let (mut vertices, normalsvec, tex) : (Vec<Vec3>, Vec<Vec3>, Vec<f32>) = draw::create_sphere(2.0, Vec3::default());
     for iter in 0..vertices.len(){
         vertices[iter] = vertices[iter].fast_normalize();
     }
@@ -176,7 +175,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                 for body in blist
                 {
                     let r_space_vec : Vec3 = body.position * fast_scalar;
-                    let sphere_r_coords = lin_alg::create_sphere(0.05, r_space_vec);
+                    let sphere_r_coords = draw::create_sphere(0.05, r_space_vec);
                     let r_vert_buf = create_vertex_buffer(&sphere_r_coords.0, &display);
                     let r_norm_buf = create_normals(&sphere_r_coords.1, &sphere_r_coords.0, &display);
                     disp.draw((&r_vert_buf, &r_norm_buf), &index_buffer, &program, &uniforms, &Default::default()).unwrap();
@@ -185,7 +184,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                     {
                         let sma = body.get_semimajor_axis(res.world.barycenter_mass);
                         let ecc = body.get_eccentricity(res.world.barycenter_mass);
-                        let plot_vec = graph::plot_kepler_orbit(sma, ecc, body.mass, res.world.barycenter_mass);
+                        let plot_vec = draw::plot_kepler_orbit(sma, ecc, body.mass, res.world.barycenter_mass);
                         let plot_vert_buf = create_vertex_buffer(&plot_vec, &display);
                         disp.draw(&plot_vert_buf, &l_indices, &program, &uniforms, &Default::default()).unwrap();
                     }
