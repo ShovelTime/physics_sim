@@ -191,4 +191,25 @@ impl Body{
 
 
     }
+    
+    pub fn get_true_anomaly(&self, ref_vec : &vec::Vec3, bary_mass : f64) -> f64
+    {
+        let ecc_vec = self.get_eccentricity_vec(bary_mass);
+        let ecc_mag = ecc_vec.length();
+        let pos_mag = self.position.length();
+        let first_arg = (ecc_vec.dot(self.position)) / (ecc_mag * pos_mag);
+
+    }
+
+    pub fn get_orbital_inclination(&self) -> f64
+    {
+        let ang_vec = self.get_angular_momentum_vec();
+        (ang_vec.z / ang_vec.length()).acos()
+        
+    }
+    pub fn get_long_asc_node(&self) -> vec::Vec3
+    {
+        let spec_ang_vec = self.get_specific_ang_momentum_vec();
+        vec::Vec3::new(0.0, 0.0, 1.0).cross(spec_ang_vec) 
+    }
 }

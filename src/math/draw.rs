@@ -1,7 +1,7 @@
 use crate::math::vec::Vec3;
 use crate::constants::PI;
 
-pub fn plot_kepler_orbit(sm_axis : f64, eccentricity : f64, mass_1 : f64, tot_mass : f64) -> Vec<Vec3>
+pub fn plot_kepler_orbit(sm_axis : f64, eccentricity : f64, kepler_scalar : f64, init_angle : f64) -> Vec<Vec3>
 {
     if eccentricity < 0.0
     {
@@ -12,19 +12,21 @@ pub fn plot_kepler_orbit(sm_axis : f64, eccentricity : f64, mass_1 : f64, tot_ma
         return Vec::new() //
     }
     let step_size = 0.5; // step size in deg
+    let mut curr_step = init_angle;
+    let rad = curr_step * PI / 180.0;
     let polar_perigee = sm_axis * (1.0 - eccentricity);
     let mut plot_table = Vec::new();
-    plot_table.push(Vec3::new(polar_perigee * 0.0_f64.cos(), polar_perigee * 0.0_f64.sin(), 0.0));
-    let mut curr_step = 0.0;
+    plot_table.push(Vec3::new(polar_perigee * rad.cos(), polar_perigee * rad.sin(), 0.0));
+    
 
     loop
     {
         curr_step += step_size;
         let step_rad : f64 = curr_step * PI / 180.0;
         let polar_coord = (sm_axis * (1.0 - eccentricity.powi(2))) / (1.0 + eccentricity * step_rad.cos());
-        plot_table.push(Vec3::new(polar_coord * step_rad.cos(), step_rad.sin(), 0.0));
+        plot_table.push(Vec3::new(polar_coord * step_rad.cos(), polar_coord * step_rad.sin(), 0.0));
 
-        if curr_step as i64 >= 360
+        if curr_step >= init_angle + 360.0
         {
             break
         }
@@ -126,3 +128,4 @@ pub fn fast_circle(radius : f64) -> Vec<Vec3>
     }
     vertexvec
 }
+

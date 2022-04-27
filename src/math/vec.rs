@@ -62,6 +62,12 @@ impl Vec3
 
     }
 
+    pub fn get_angle(&self, tgt : &Vec3) -> f64
+    {
+        let u_vec = (*self - *tgt).normalize();
+        u_vec.y.atan2(u_vec.x)
+    }
+
     pub fn get_direction(&self, other: &Vec3) -> Vec3
     {
         self.get_distance_vec(other).normalize()
