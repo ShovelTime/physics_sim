@@ -21,9 +21,9 @@ impl Vec3
         Vec3::new( self.x.abs(), self.y.abs(), self.z.abs() )
 
     }
-    pub fn from_vec(vec : Vec<f64>) -> Vec3
+    pub fn from_vec(vec : Vec<f64>, offset : usize) -> Vec3
     {
-        Vec3::new(vec[0], vec[1], vec[2])
+        Vec3::new(vec[offset + 0], vec[offset + 1], vec[offset + 2])
     }
     pub fn fast_div(&self, other : f64) -> Vec3 // faster than the normal division "/" Operator, but loses some accuracy to rounding errors.
     {
