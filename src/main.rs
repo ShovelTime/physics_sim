@@ -204,10 +204,12 @@ fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::SyncSe
         {
             continue;
         }
+        /*
         if engine_state.simticks >= 31540000
         {
             engine_state.worldstate = p_engine::PEngineState::Stopped;
         }
+        */
         engine_state.process_physics();
         engine_state.simticks = engine_state.simticks + 1;
         match bodytx.try_send(engine_state.clone())
