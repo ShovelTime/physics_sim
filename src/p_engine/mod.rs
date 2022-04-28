@@ -192,12 +192,18 @@ impl Body{
 
     }
     
-    pub fn get_true_anomaly(&self, ref_vec : &vec::Vec3, bary_mass : f64) -> f64
+    pub fn get_true_anomaly(&self, bary_mass : f64) -> f64
     {
         let ecc_vec = self.get_eccentricity_vec(bary_mass);
         let ecc_mag = ecc_vec.length();
         let pos_mag = self.position.length();
         let first_arg = (ecc_vec.dot(self.position)) / (ecc_mag * pos_mag);
+        let res = first_arg.acos();
+        if self.position.dot(self.velocity) < 0.0
+        {
+            return (res - (2.0 * constants::PI) * -1.0)
+        }
+        res
 
     }
 

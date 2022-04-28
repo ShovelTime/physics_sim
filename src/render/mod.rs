@@ -8,9 +8,9 @@ use glium::glutin;
 use glium::Surface;
 use glium::DrawParameters;
 use glium::Depth;
+
 use std;
 use std::time::{Duration, Instant};
-use crate::math::phys::Phys;
 use glutin::platform::windows::EventLoopExtWindows;
 use crate::math::vec::Vec3;
 use crate::p_engine;
@@ -49,7 +49,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
     
     let farther_object = &first_iter.world.bodylist[&first_iter.world.bodylist.len() - 1];
     let dist_scale = farther_object.position.get_distance_sum(&Vec3::default());
-    let fast_scalar = 0.8 / dist_scale; //minimize amount of divisions we will need to do.
+    let fast_scalar = 0.8 / dist_scale; //minimize amount of divisions we will need to do, precision is also less of a concern for rendering
     println!("{}" , dist_scale);
 
 
@@ -123,25 +123,6 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
     
     let normals = create_normals(&normalsvec, &vertices, &display);
 
-    /*
-    fn draw(display : &glium::Display, vertex_buffer : &glium::VertexBuffer<Vertex>, normals : &glium::VertexBuffer<Normals>, index_buffer : &glium::index::NoIndices, program : &glium::Program)  
-    {   
-        let uniforms = uniform! {
-            matrix: [
-                [1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0],
-                [0.0, 0.0, 0.0, 1.0f32]
-            ]
-        };
-        let mut res = display.draw();
-        res.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
-        res.draw((vertex_buffer, normals), index_buffer, program, &uniforms, &Default::default()).unwrap();
-        res.finish().unwrap();
-
-
-    }
-    */
     let uniforms = uniform! {
         matrix: [
             [1.0, 0.0, 0.0, 0.0],
@@ -185,7 +166,8 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                     {
                         let sma = body.get_semimajor_axis(res.world.barycenter_mass);
                         let ecc = body.get_eccentricity(res.world.barycenter_mass);
-                        let init_angle = body.position.get_angle(&Vec3::default()) * 180.0 / PI;
+                        let body_ang = body.position.get_angle(&Vec3::default());
+                        let init_angle = (body_ang - body.get_true_anomaly(res.world.barycenter_mass)) * 180.0 / PI;
                         let p_dist = sma * (1.0 - ecc);
                         let kepler_scalar = r_space_vec.abs_self().length() / p_dist;
                         let plot_vec = draw::plot_kepler_orbit(sma, ecc, kepler_scalar, init_angle);
