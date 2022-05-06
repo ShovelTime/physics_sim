@@ -14,6 +14,8 @@ pub mod ch_com;
 use std::io;
 use chrono::{NaiveDateTime};
 use std::fs;
+use std::time::Instant;
+use std::time::Duration;
 use serde_json::{Value};
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
@@ -124,9 +126,9 @@ fn main() {
 }
 fn init(engine_state : p_engine::PEngine) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
 {
-    let (bodytx, bodyrx) : ( SyncSender<p_engine::PEngine> , Receiver<p_engine::PEngine> ) = mpsc::sync_channel(1);
-    let (intx, inrx) : (SyncSender<Inloopcmd>, Receiver<Inloopcmd>) = mpsc::sync_channel(1);
-    let (outx, ourx) : (Sender<String>, Receiver<String>) = mpsc::channel();
+    let (bodytx, bodyrx) : ( SyncSender<p_engine::PEngine> , Receiver<p_engine::PEngine> ) = mpsc::sync_channel(1); // Physics to Render, to send Orbital data
+    let (intx, inrx) : (SyncSender<Inloopcmd>, Receiver<Inloopcmd>) = mpsc::sync_channel(1); // Input to Physics, for sending commands to the Physics thread
+    let (outx, ourx) : (Sender<String>, Receiver<String>) = mpsc::channel(); // Physics to Input, responding to commands from the Input Thread.
     let phys_thread = std::thread::spawn(move || {
         println!("Physics thread started");
         p_loop(engine_state , bodytx, inrx, outx)
@@ -140,8 +142,6 @@ fn init(engine_state : p_engine::PEngine) -> (std::thread::JoinHandle<()>, std::
         inloop(intx,ourx)
 
     });
-
-   //**prog_state = GlobalState::Running;
     
     return (phys_thread, rend_thread, input_thread);
     
@@ -152,6 +152,7 @@ fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::SyncSe
     engine_state.worldstate = p_engine::PEngineState::Running;
     while engine_state.worldstate != p_engine::PEngineState::Stopped
     {
+
 
         let cmd;
 
@@ -204,12 +205,12 @@ fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::SyncSe
         {
             continue;
         }
-        /*
-        if engine_state.simticks >= 31540000
+        
+        if engine_state.simticks >= 63113852
         {
             engine_state.worldstate = p_engine::PEngineState::Stopped;
         }
-        */
+        
         engine_state.process_physics();
         engine_state.simticks = engine_state.simticks + 1;
         match bodytx.try_send(engine_state.clone())
