@@ -1,4 +1,4 @@
-#Physics Simulation in Rust
+# Physics Simulation in Rust
 
 This program is an n-body simulation of the main bodies of our solar system, using Cowell's formula to calculate the bodies's orbital state vectors.
 
