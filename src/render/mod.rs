@@ -161,8 +161,8 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                     let r_vert_buf = create_vertex_buffer(&sphere_r_coords.0, &display);
                     let r_norm_buf = create_normals(&sphere_r_coords.1, &sphere_r_coords.0, &display);
                     disp.draw((&r_vert_buf, &r_norm_buf), &index_buffer, &program, &uniforms, &Default::default()).unwrap();
-                    /*
-                    if body.bID == 1
+                    
+                    if body.bID == 3
                     {
                         let sma = body.get_semimajor_axis(res.world.barycenter_mass);
                         let ecc = body.get_eccentricity(res.world.barycenter_mass);
@@ -174,7 +174,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                         let plot_vert_buf = create_vertex_buffer(&plot_vec, &display);
                         disp.draw(&plot_vert_buf, &l_indices, &program, &uniforms, &Default::default()).unwrap();
                     }
-                    */
+                    
 
                 }
                 
