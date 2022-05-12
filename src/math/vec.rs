@@ -1,3 +1,6 @@
+
+use crate::constants::PI;
+
 #[derive(Copy, Clone)]
 pub struct Vec3
 {
@@ -65,7 +68,16 @@ impl Vec3
     pub fn get_angle(&self, tgt : &Vec3) -> f64
     {
         let u_vec = (*self - *tgt).normalize();
-        u_vec.y.atan2(u_vec.x)
+        let ang = u_vec.y.atan2(u_vec.x);
+        if ang < 0.0
+        {
+            2.0 * PI - ang.abs()
+        }
+        else
+        {
+            ang
+        }
+        
     }
 
     pub fn get_direction(&self, other: &Vec3) -> Vec3

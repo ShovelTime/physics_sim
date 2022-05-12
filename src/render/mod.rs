@@ -85,7 +85,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
     }
     "}).unwrap();
 
-    fn create_vertex_buffer(vertices : &Vec<Vec3>, display : &glium::Display) -> glium::VertexBuffer<Vertex>
+    fn create_vertex_buffer(vertices : &Vec<Vec3>, display : &glium::Display, incolor : [f32; 3]) -> glium::VertexBuffer<Vertex>
     {
 
         let size : usize = vertices.len();
@@ -95,14 +95,14 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
             let curr_vertices : &Vec3 = &vertices[index];
             vertex_buf.push(Vertex{
                 position : [curr_vertices.x as f32, curr_vertices.y as f32, curr_vertices.z as f32],
-                color : [1.0, 1.0, 1.0]
+                color : incolor
             })
         }
         glium::VertexBuffer::new(display, &vertex_buf).unwrap()
     }
     
-
-    let vertex_buffer = create_vertex_buffer(&vertices, &display);
+    let color_default = [1.0, 1.0, 1.0];
+    let vertex_buffer = create_vertex_buffer(&vertices, &display, color_default);
     
 
     fn create_normals(normalsvec : &Vec<Vec3>, vertices : &Vec<Vec3>, display : &glium::Display) -> glium::VertexBuffer<Normals>
@@ -131,6 +131,8 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
             [0.0, 0.0, 0.0, 1.0f32]
         ]
     };
+
+    let mut highlighted = -1;
    
     eventloop.run(move |event, _, control_flow| { 
         *control_flow = match event {
@@ -152,28 +154,54 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                 let mut disp = display.draw();
                 let blist = res.world.get_body_list();
                 let l_indices = glium::index::NoIndices(glium::index::PrimitiveType::LinesList);
+                highlighted = res.highlighted;
                 
                 disp.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
                 for body in blist
                 {
                     let r_space_vec : Vec3 = body.position * fast_scalar;
+                    if body.bID == 4
+                    {
+                        let highlight_color = [0.835, 0.784, 0.203];
+                        let sphere_r_coords = draw::create_sphere(0.05, r_space_vec);
+
+                        let r_vert_buf = create_vertex_buffer(&sphere_r_coords.0, &display, highlight_color);
+                        let r_norm_buf = create_normals(&sphere_r_coords.1, &sphere_r_coords.0, &display);
+
+                        disp.draw((&r_vert_buf, &r_norm_buf), &index_buffer, &program, &uniforms, &Default::default()).unwrap();
+
+                        let sma = body.get_semimajor_axis(res.world.barycenter_mass - body.mass);
+                        let ecc = body.get_eccentricity(res.world.barycenter_mass - body.mass);
+                        let body_ang = body.position.get_angle(&Vec3::default());
+                        let true_anom = body.get_true_anomaly(res.world.barycenter_mass - body.mass);
+
+                        let init_angle = (body_ang - true_anom) * 180.0 / PI;
+                         //let init_angle = (body_ang - body.get_true_anomaly(res.world.barycenter_mass - body.mass)) * 180.0 / PI;
+                        println!("{}", init_angle);
+                        let p_dist = sma * (1.0 - ecc);
+                        let kepler_scalar = r_space_vec.abs_self().length() * fast_scalar;
+
+                        let plot_vec = draw::plot_kepler_orbit(sma, ecc, kepler_scalar, init_angle);
+                        let plot_vert_buf = create_vertex_buffer(&plot_vec, &display, highlight_color);
+
+                        disp.draw(&plot_vert_buf, &l_indices, &program, &uniforms, &Default::default()).unwrap();
+
+
+                        let perigee_sphere_vert = create_vertex_buffer(&draw::create_sphere(0.02, plot_vec[0]).0, &display, highlight_color);
+                        disp.draw(&perigee_sphere_vert, &index_buffer, &program, &uniforms, &Default::default()).unwrap();
+                        continue
+
+
+                    }
+
                     let sphere_r_coords = draw::create_sphere(0.05, r_space_vec);
-                    let r_vert_buf = create_vertex_buffer(&sphere_r_coords.0, &display);
+
+                    let r_vert_buf = create_vertex_buffer(&sphere_r_coords.0, &display, color_default);
                     let r_norm_buf = create_normals(&sphere_r_coords.1, &sphere_r_coords.0, &display);
+
                     disp.draw((&r_vert_buf, &r_norm_buf), &index_buffer, &program, &uniforms, &Default::default()).unwrap();
                     
-                    if body.bID == 3
-                    {
-                        let sma = body.get_semimajor_axis(res.world.barycenter_mass);
-                        let ecc = body.get_eccentricity(res.world.barycenter_mass);
-                        let body_ang = body.position.get_angle(&Vec3::default());
-                        let init_angle = (body_ang - body.get_true_anomaly(res.world.barycenter_mass)) * 180.0 / PI;
-                        let p_dist = sma * (1.0 - ecc);
-                        let kepler_scalar = r_space_vec.abs_self().length() / p_dist;
-                        let plot_vec = draw::plot_kepler_orbit(sma, ecc, kepler_scalar, init_angle);
-                        let plot_vert_buf = create_vertex_buffer(&plot_vec, &display);
-                        disp.draw(&plot_vert_buf, &l_indices, &program, &uniforms, &Default::default()).unwrap();
-                    }
+
                     
 
                 }

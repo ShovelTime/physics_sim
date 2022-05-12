@@ -29,6 +29,7 @@ pub enum Inloopcmd
     GetSimTicks,
     GetBodyList,
     GetBodyInfo(i64),
+    Highlight(i64),
     Pause,
     Resume,
     Stop,
@@ -180,6 +181,10 @@ fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::SyncSe
                 outx.send("STOP".to_string()).unwrap()
 
             }
+            Inloopcmd::Highlight(id) => {
+                engine_state.highlighted = id
+
+            }
             Inloopcmd::GetBodyInfo(id) => {
                 if id > engine_state.bodycount || id < 0
                 {
@@ -246,7 +251,14 @@ fn inloop(cmdsend : std::sync::mpsc::SyncSender<Inloopcmd>, cmdres : std::sync::
             stdin.read_line(&mut response).unwrap();
             match &response[0..response.len() - 2]
             {
-                "help" => println!("Available Commands:\n getsimticks: Return the current physics iteration.\n getbodylist: Return list of all bodies currently being simulated.\n getbodyinfo: returns information about a body determined by its ID on the list.\n pause: pause the simulation.\n resume: resumes the simulation.\n stop: interrupts and stops the program."),
+                "help" => println!("Available Commands:\n
+                 getsimticks: Return the current physics iteration.\n 
+                 getbodylist: Return list of all bodies currently being simulated.\n 
+                 getbodyinfo: Returns information about a body determined by its ID on the list.\n 
+                 highlight: Highlight object and display osculating orbit.\n
+                 pause: Pause the simulation.\n 
+                 resume: Resumes the simulation.\n 
+                 stop: Interrupts and stops the program."),
                 "getsimticks" => cmdsend.send(Inloopcmd::GetSimTicks).unwrap_or_else(|_|
                     {
                         println!("p_engine disconnected, returning.");
@@ -294,6 +306,24 @@ fn inloop(cmdsend : std::sync::mpsc::SyncSender<Inloopcmd>, cmdres : std::sync::
                 {
                     return
                 }); return}
+                "highlight" => {
+                    let mut bid = String::new();
+                    println!("Enter ID:");
+                    stdin.read_line(&mut bid).unwrap();
+                    let integer = bid[0..bid.len() - 2].parse::<i64>().unwrap_or_else(|_|
+                        {
+                            println!("failed to parse to number, defaulting to 0");
+                            std::thread::sleep(std::time::Duration::from_millis(500));
+                            0
+
+                        });
+                    cmdsend.send(Inloopcmd::Highlight(integer)).unwrap_or_else(|_|
+                        {
+                            println!("p_engine disconnected, returning.");
+                            return
+                        }
+                    )
+                }
                 &_ => println!("Unrecognized Command")
             }
         }

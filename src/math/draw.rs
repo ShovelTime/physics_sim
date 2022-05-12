@@ -1,13 +1,13 @@
-use crate::math::vec::Vec3;
+use crate::math::vec;
 use crate::constants::PI;
 
-pub fn plot_kepler_orbit(sm_axis : f64, eccentricity : f64, kepler_scalar : f64, init_angle : f64) -> Vec<Vec3>
+pub fn plot_kepler_orbit(sm_axis : f64, eccentricity : f64, kepler_scalar : f64, init_angle : f64) -> Vec<vec::Vec3>
 {
     if eccentricity < 0.0
     {
         panic!("eccentricity is under 0! wat");
     }
-    if eccentricity as i64 == 1
+    if eccentricity >= 1.0
     {
         return Vec::new() //
     }
@@ -16,7 +16,7 @@ pub fn plot_kepler_orbit(sm_axis : f64, eccentricity : f64, kepler_scalar : f64,
     let rad = curr_step * PI / 180.0;
     let polar_perigee = (sm_axis * (1.0 - eccentricity.powi(2))) / (1.0 + eccentricity * rad.cos()) * kepler_scalar;
     let mut plot_table = Vec::new();
-    plot_table.push(Vec3::new(polar_perigee * rad.cos(), polar_perigee * rad.sin(), 0.0));
+    plot_table.push(vec::Vec3::new(polar_perigee * rad.cos(), polar_perigee * rad.sin(), 0.0));
     
 
     loop
@@ -24,7 +24,7 @@ pub fn plot_kepler_orbit(sm_axis : f64, eccentricity : f64, kepler_scalar : f64,
         curr_step += step_size;
         let step_rad : f64 = curr_step * PI / 180.0;
         let polar_coord = (sm_axis * (1.0 - eccentricity.powi(2))) / (1.0 + eccentricity * step_rad.cos()) * kepler_scalar;
-        plot_table.push(Vec3::new(polar_coord * step_rad.cos(), polar_coord * step_rad.sin(), 0.0));
+        plot_table.push(vec::Vec3::new(polar_coord * step_rad.cos(), polar_coord * step_rad.sin(), 0.0));
 
         if curr_step >= init_angle + 360.0
         {
@@ -35,7 +35,7 @@ pub fn plot_kepler_orbit(sm_axis : f64, eccentricity : f64, kepler_scalar : f64,
     plot_table
 }
 
-pub fn create_sphere(radius : f32, offset : Vec3) -> (Vec<Vec3>, Vec<Vec3>, Vec<f32>) // Vertex vector, normals vector, tex coords vector.
+pub fn create_sphere(radius : f32, offset : vec::Vec3) -> (Vec<vec::Vec3>, Vec<vec::Vec3>, Vec<f32>) // Vertex vector, normals vector, tex coords vector.
 {
     let sectorcount : i32 = 100;
     let stackcount : i32 = 100;
@@ -66,12 +66,12 @@ pub fn create_sphere(radius : f32, offset : Vec3) -> (Vec<Vec3>, Vec<Vec3>, Vec<
 
             x = xy * sectorangle.cos() + offset.x as f32;
             y = xy * sectorangle.sin() + offset.y as f32;
-            vertexvec.push(Vec3::new(x as f64, y as f64, z as f64));
+            vertexvec.push(vec::Vec3::new(x as f64, y as f64, z as f64));
 
             nx = x * length_inv;
             ny = y * length_inv;
             nz = z *length_inv;
-            normalsvec.push(Vec3::new(nx as f64, ny as f64, nz as f64));
+            normalsvec.push(vec::Vec3::new(nx as f64, ny as f64, nz as f64));
 
 
             s = (iter2 / sectorcount) as f32;
@@ -86,7 +86,7 @@ pub fn create_sphere(radius : f32, offset : Vec3) -> (Vec<Vec3>, Vec<Vec3>, Vec<
     (vertexvec, normalsvec, texvec)
 } 
 
-pub fn fast_sphere(radius : f32) -> Vec<Vec3> // only computes vertices coordinate.
+pub fn fast_sphere(radius : f32) -> Vec<vec::Vec3> // only computes vertices coordinate.
 {
     let sectorcount : i32 = 100;
     let stackcount : i32 = 100;
@@ -107,7 +107,7 @@ pub fn fast_sphere(radius : f32) -> Vec<Vec3> // only computes vertices coordina
 
             x = xy * sectorangle.cos();
             y = xy * sectorangle.sin();
-            vertexvec.push(Vec3::new(x as f64, y as f64, z as f64));
+            vertexvec.push(vec::Vec3::new(x as f64, y as f64, z as f64));
 
 
         } 
@@ -116,15 +116,15 @@ pub fn fast_sphere(radius : f32) -> Vec<Vec3> // only computes vertices coordina
     vertexvec
 }
 
-pub fn fast_circle(radius : f64) -> Vec<Vec3>
+pub fn fast_circle(radius : f64) -> Vec<vec::Vec3>
 {
     let twicepi = PI * 2.0;
-    let mut vertexvec : Vec<Vec3> =  Vec::new();
+    let mut vertexvec : Vec<vec::Vec3> =  Vec::new();
     let sectorcount = 100;
-    //vertexvec.push(Vec3::new(0.0,0.0,0.0));
+    //vertexvec.push(vec::Vec3::new(0.0,0.0,0.0));
     for i in 0..sectorcount
     {
-        vertexvec.push(Vec3::new(radius * (i as f64 * twicepi / sectorcount as f64).cos(), radius * (i as f64 * twicepi / sectorcount as f64).sin(), 0.0 ));
+        vertexvec.push(vec::Vec3::new(radius * (i as f64 * twicepi / sectorcount as f64).cos(), radius * (i as f64 * twicepi / sectorcount as f64).sin(), 0.0 ));
     }
     vertexvec
 }

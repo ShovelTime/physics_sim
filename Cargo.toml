@@ -16,3 +16,6 @@ serde = { version="1.0.136", features = ["derive"] }
 serde_json = "*"
 chrono = "*"
 glium = "0.31.0"
+
+[build]
+rustc-wrapper = 'C:\Users\19erlind\scoop\apps\sccache\0.2.14\sccache.exe'
