@@ -132,7 +132,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
         ]
     };
 
-    let mut highlighted = -1;
+    let mut highlighted = 1;
    
     eventloop.run(move |event, _, control_flow| { 
         *control_flow = match event {
@@ -160,7 +160,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                 for body in blist
                 {
                     let r_space_vec : Vec3 = body.position * fast_scalar;
-                    if body.bID == 4
+                    if body.bID == highlighted
                     {
                         let highlight_color = [0.835, 0.784, 0.203];
                         let sphere_r_coords = draw::create_sphere(0.05, r_space_vec);
@@ -174,14 +174,17 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                         let ecc = body.get_eccentricity(res.world.barycenter_mass - body.mass);
                         let body_ang = body.position.get_angle(&Vec3::default());
                         let true_anom = body.get_true_anomaly(res.world.barycenter_mass - body.mass);
+                        
+                        let periapsis_arg = body.get_periapsis_arg(res.world.barycenter_mass);
 
                         let init_angle = (body_ang - true_anom) * 180.0 / PI;
                          //let init_angle = (body_ang - body.get_true_anomaly(res.world.barycenter_mass - body.mass)) * 180.0 / PI;
-                        println!("{}", init_angle);
+                        //println!("{}", periapsis_arg);
                         let p_dist = sma * (1.0 - ecc);
-                        let kepler_scalar = r_space_vec.abs_self().length() * fast_scalar;
+                        let kepler_scalar = r_space_vec.abs_self().length() / p_dist;
+                        //let kepler_scalar = r_space_vec.abs_self().length() * fast_scalar;
 
-                        let plot_vec = draw::plot_kepler_orbit(sma, ecc, kepler_scalar, init_angle);
+                        let plot_vec = draw::plot_kepler_orbit(sma, ecc, kepler_scalar, init_angle, body_ang);
                         let plot_vert_buf = create_vertex_buffer(&plot_vec, &display, highlight_color);
 
                         disp.draw(&plot_vert_buf, &l_indices, &program, &uniforms, &Default::default()).unwrap();

@@ -64,6 +64,11 @@ impl Vec3
         (stage1.x.powi(2) + stage1.y.powi(2) + stage1.z.powi(2)).sqrt()
 
     }
+    pub fn rotate_2d(&self ,theta : f64) -> Vec3
+    {
+        Vec3::new(self.x * theta.cos() - self.y * theta.sin(), self.y * theta.cos() + self.x * theta.sin() , self.z)
+
+    }
 
     pub fn get_angle(&self, tgt : &Vec3) -> f64
     {

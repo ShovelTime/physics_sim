@@ -2,7 +2,6 @@ use crate::math::vec;
 use crate::math::phys::Phys;
 use crate::constants;
 
-
 #[derive(PartialEq, Clone)]
 pub enum PEngineState{
     Unloaded,
@@ -115,7 +114,7 @@ impl Default for PEngine
     {
         PEngine
         {
-            highlighted : -1,
+            highlighted : 1,
             bodycount : 0,
             timestamp : 0,
             simticks : 0,
@@ -273,6 +272,24 @@ impl Body{
     {
         let spec_ang_vec = self.get_specific_ang_momentum_vec();
         vec::Vec3::new(0.0, 0.0, 1.0).cross(spec_ang_vec) 
+    }
+
+    pub fn get_periapsis_arg(&self, tgt_mass : f64) -> f64
+    {
+        let asc_node_vec = self.get_long_asc_node();
+        let ecc_vec = self.get_eccentricity_vec(tgt_mass - self.mass);
+
+        let asc_node_mag = asc_node_vec.length();
+        let ecc_mag = ecc_vec.length();
+
+        let first_arg = asc_node_vec.dot(ecc_vec) / (ecc_mag * asc_node_mag);
+        let res = first_arg.acos();
+        if ecc_vec.z < 0.0
+        {
+            return (2.0 * constants::PI) - res
+        }
+        res
+
     }
 
 
