@@ -59,7 +59,7 @@ fn main() {
     }
 
     let mut currpath = std::env::current_dir().unwrap();
-    currpath.push("Sol.json");
+    currpath.push("Sol_6_body.json");
     println!("{0}", currpath.to_str().unwrap());
     let mut phys_engine = p_engine::PEngine::default();
 
@@ -211,10 +211,12 @@ fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::SyncSe
             continue;
         }
         
+        /*
         if engine_state.simticks >= 63113852
         {
             engine_state.worldstate = p_engine::PEngineState::Stopped;
         }
+        */
         
         engine_state.process_physics();
         engine_state.simticks = engine_state.simticks + 1;

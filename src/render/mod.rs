@@ -189,9 +189,15 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
 
                         disp.draw(&plot_vert_buf, &l_indices, &program, &uniforms, &Default::default()).unwrap();
 
+                        let per_ang = body_ang - true_anom;
+                        let polar_perigee = (sma * (1.0 - ecc.powi(2))) / (1.0 + ecc * per_ang.cos()) * kepler_scalar;
+                        let polar_pos_vec = Vec3::new(polar_perigee * per_ang.cos(), polar_perigee * per_ang.sin(), 0.0);
 
-                        let perigee_sphere_vert = create_vertex_buffer(&draw::create_sphere(0.02, plot_vec[0]).0, &display, highlight_color);
+                        /*
+                        let perigee_sphere_vert = create_vertex_buffer(&draw::create_sphere(0.02, polar_pos_vec).0, &display, highlight_color);
                         disp.draw(&perigee_sphere_vert, &index_buffer, &program, &uniforms, &Default::default()).unwrap();
+                        */
+                        
                         continue
 
 
