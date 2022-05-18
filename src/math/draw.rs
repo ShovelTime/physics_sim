@@ -12,7 +12,7 @@ pub fn plot_kepler_orbit(sm_axis : f64, eccentricity : f64, kepler_scalar : f64,
         return Vec::new() //
     }
     let step_size = 0.5; // step size in deg
-    let init_rad = init_angle * PI / 180.0;
+    let _init_rad = init_angle * PI / 180.0;
     let mut curr_step = init_angle;
     let rad = curr_step * PI / 180.0;
     let polar_perigee = (sm_axis * (1.0 - eccentricity.powi(2))) / (1.0 + eccentricity * rad.cos()) * kepler_scalar;
@@ -22,7 +22,7 @@ pub fn plot_kepler_orbit(sm_axis : f64, eccentricity : f64, kepler_scalar : f64,
 
     loop
     {
-        
+
         curr_step += step_size;
         let step_rad : f64 = curr_step * PI / 180.0;
         let polar_coord = (sm_axis * (1.0 - eccentricity.powi(2))) / (1.0 + eccentricity * step_rad.cos()) * kepler_scalar;

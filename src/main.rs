@@ -14,13 +14,9 @@ pub mod ch_com;
 use std::io;
 use chrono::{NaiveDateTime};
 use std::fs;
-use std::time::Instant;
-use std::time::Duration;
 use serde_json::{Value};
 use serde::{Deserialize, Serialize};
-use serde_json::Result;
 use std::sync::mpsc;
-use std::sync::Arc;
 use std::sync::mpsc::{SyncSender, Receiver, Sender};
 
 #[derive(PartialEq)]
@@ -57,9 +53,18 @@ fn main() {
         name : String,
         date : String
     }
-
     let mut currpath = std::env::current_dir().unwrap();
-    currpath.push("Sol_6_body.json");
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() <= 1
+    {
+        currpath.push("Sol_Full.json");
+    }
+    else 
+    {
+        currpath.push(&args[1]);
+    }
+    
+    
     println!("{0}", currpath.to_str().unwrap());
     let mut phys_engine = p_engine::PEngine::default();
 
@@ -97,7 +102,7 @@ fn main() {
         let velocity : [f64 ; 3] = members.velocity;
         phys_engine.world.bodylist.push(p_engine::Body
             {
-                bID : phys_engine.bodycount,
+                b_id : phys_engine.bodycount,
                 name : members.name,
                 mass : members.mass,
                 radius : members.radius,
@@ -111,7 +116,7 @@ fn main() {
     
     phys_engine.worldstate = p_engine::PEngineState::Loaded;
     println!("{0}", phys_engine.bodycount);
-    let (p_thread, r_thread, i_thread) = init(phys_engine);
+    let (p_thread, _r_thread, i_thread) = init(phys_engine);
 
     p_thread.join().unwrap();
     println!("Engine is shutting down, Press Any Keys to continue.");
@@ -136,7 +141,7 @@ fn init(engine_state : p_engine::PEngine) -> (std::thread::JoinHandle<()>, std::
         
     });
     let rend_thread = std::thread::spawn(move || {
-        render::init_Render(bodyrx);
+        render::init_render(bodyrx);
         println!("Render thread started");
     });
     let input_thread = std::thread::spawn(move || {
@@ -199,7 +204,7 @@ fn p_loop(mut engine_state : p_engine::PEngine, bodytx : std::sync::mpsc::SyncSe
                 let mut out = String::new();
                 for body in engine_state.world.get_body_list()
                 {
-                    out += format!("[{0}: {1}] \n", &body.bID, &body.name).as_str();
+                    out += format!("[{0}: {1}] \n", &body.b_id, &body.name).as_str();
                 }
                 outx.send(out).unwrap()
 
@@ -253,13 +258,13 @@ fn inloop(cmdsend : std::sync::mpsc::SyncSender<Inloopcmd>, cmdres : std::sync::
             stdin.read_line(&mut response).unwrap();
             match &response[0..response.len() - 2]
             {
-                "help" => println!("Available Commands:\n
-                 getsimticks: Return the current physics iteration.\n 
-                 getbodylist: Return list of all bodies currently being simulated.\n 
-                 getbodyinfo: Returns information about a body determined by its ID on the list.\n 
-                 highlight: Highlight object and display osculating orbit.\n
-                 pause: Pause the simulation.\n 
-                 resume: Resumes the simulation.\n 
+                "help" => println!("Available Commands:
+                 getsimticks: Return the current physics iteration.
+                 getbodylist: Return list of all bodies currently being simulated.
+                 getbodyinfo: Returns information about a body determined by its ID on the list.
+                 highlight: Highlight object and display osculating orbit.
+                 pause: Pause the simulation.
+                 resume: Resumes the simulation.
                  stop: Interrupts and stops the program."),
                 "getsimticks" => cmdsend.send(Inloopcmd::GetSimTicks).unwrap_or_else(|_|
                     {

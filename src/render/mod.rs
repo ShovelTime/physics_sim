@@ -2,20 +2,22 @@ extern crate glium;
 extern crate glam;
 use crate::math::draw;
 use crate::constants::PI;
-
+#[allow(unused_imports)]
 use glium::{implement_vertex, program, uniform};
 use glium::glutin;
 use glium::Surface;
+/*
 use glium::DrawParameters;
 use glium::Depth;
+*/
 
 use std;
-use std::time::{Duration, Instant};
+//use std::time::{Duration, Instant};
 use glutin::platform::windows::EventLoopExtWindows;
 use crate::math::vec::Vec3;
 use crate::p_engine;
 
-pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
+pub fn init_render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
 {
     #[derive(Copy, Clone)]
     struct Normals {
@@ -35,7 +37,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
     let wb = glutin::window::WindowBuilder::new();
     let cb = glutin::ContextBuilder::new().with_depth_buffer(24);
     let display = glium::Display::new(wb, cb, &eventloop).unwrap();
-    let params = glium::DrawParameters {
+    let _params = glium::DrawParameters {
         depth: glium::Depth {
             test: glium::draw_parameters::DepthTest::IfLess,
             write: true,
@@ -53,7 +55,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
     println!("{}" , dist_scale);
 
 
-    let (mut vertices, normalsvec, tex) : (Vec<Vec3>, Vec<Vec3>, Vec<f32>) = draw::create_sphere(2.0, Vec3::default());
+    let (mut vertices, normalsvec, _tex) : (Vec<Vec3>, Vec<Vec3>, Vec<f32>) = draw::create_sphere(2.0, Vec3::default());
     for iter in 0..vertices.len(){
         vertices[iter] = vertices[iter].fast_normalize();
     }
@@ -102,7 +104,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
     }
     
     let color_default = [1.0, 1.0, 1.0];
-    let vertex_buffer = create_vertex_buffer(&vertices, &display, color_default);
+    let _vertex_buffer = create_vertex_buffer(&vertices, &display, color_default);
     
 
     fn create_normals(normalsvec : &Vec<Vec3>, vertices : &Vec<Vec3>, display : &glium::Display) -> glium::VertexBuffer<Normals>
@@ -121,7 +123,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
         glium::VertexBuffer::new(display, &normals_buf).unwrap()
     }
     
-    let normals = create_normals(&normalsvec, &vertices, &display);
+    let _normals = create_normals(&normalsvec, &vertices, &display);
 
     let uniforms = uniform! {
         matrix: [
@@ -132,7 +134,9 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
         ]
     };
 
-    let mut highlighted = 1;
+   // let mut trace : Vec<Vec<Vec3>> = Vec::with_capacity(first_iter.world.bodylist.len());
+
+
    
     eventloop.run(move |event, _, control_flow| { 
         *control_flow = match event {
@@ -154,16 +158,26 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                 let mut disp = display.draw();
                 let blist = res.world.get_body_list();
                 let l_indices = glium::index::NoIndices(glium::index::PrimitiveType::LinesList);
-                highlighted = res.highlighted;
+                let highlighted = res.highlighted;
                 
                 disp.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
                 for body in blist
                 {
                     let r_space_vec : Vec3 = body.position * fast_scalar;
-                    if body.bID == highlighted
+                    //trace[body.b_id as usize].push(r_space_vec);
+                    if body.b_id == highlighted
                     {
                         let highlight_color = [0.835, 0.784, 0.203];
-                        let sphere_r_coords = draw::create_sphere(0.05, r_space_vec);
+                        let sphere_r_coords;
+                        if body.b_id == 0
+                        {
+                            sphere_r_coords = draw::create_sphere(0.08, r_space_vec);
+                        }
+                        else
+                        {
+                            sphere_r_coords = draw::create_sphere(0.05, r_space_vec);
+                        }
+                        
 
                         let r_vert_buf = create_vertex_buffer(&sphere_r_coords.0, &display, highlight_color);
                         let r_norm_buf = create_normals(&sphere_r_coords.1, &sphere_r_coords.0, &display);
@@ -175,7 +189,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
                         let body_ang = body.position.get_angle(&Vec3::default());
                         let true_anom = body.get_true_anomaly(res.world.barycenter_mass - body.mass);
                         
-                        let periapsis_arg = body.get_periapsis_arg(res.world.barycenter_mass);
+                        let _periapsis_arg = body.get_periapsis_arg(res.world.barycenter_mass);
 
                         let init_angle = (body_ang - true_anom) * 180.0 / PI;
                          //let init_angle = (body_ang - body.get_true_anomaly(res.world.barycenter_mass - body.mass)) * 180.0 / PI;
@@ -191,7 +205,7 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
 
                         let per_ang = body_ang - true_anom;
                         let polar_perigee = (sma * (1.0 - ecc.powi(2))) / (1.0 + ecc * per_ang.cos()) * kepler_scalar;
-                        let polar_pos_vec = Vec3::new(polar_perigee * per_ang.cos(), polar_perigee * per_ang.sin(), 0.0);
+                        let _polar_pos_vec = Vec3::new(polar_perigee * per_ang.cos(), polar_perigee * per_ang.sin(), 0.0);
 
                         /*
                         let perigee_sphere_vert = create_vertex_buffer(&draw::create_sphere(0.02, polar_pos_vec).0, &display, highlight_color);
@@ -202,13 +216,24 @@ pub fn init_Render<'a>(bodyrx : std::sync::mpsc::Receiver<p_engine::PEngine>)
 
 
                     }
-
-                    let sphere_r_coords = draw::create_sphere(0.05, r_space_vec);
+                    
+                    let sphere_r_coords;
+                    if body.b_id == 0
+                    {
+                        sphere_r_coords = draw::create_sphere(0.08, r_space_vec);
+                    }
+                    else
+                    {
+                        sphere_r_coords = draw::create_sphere(0.05, r_space_vec);
+                    }
 
                     let r_vert_buf = create_vertex_buffer(&sphere_r_coords.0, &display, color_default);
                     let r_norm_buf = create_normals(&sphere_r_coords.1, &sphere_r_coords.0, &display);
 
                     disp.draw((&r_vert_buf, &r_norm_buf), &index_buffer, &program, &uniforms, &Default::default()).unwrap();
+
+                    //let t_vert_buf = create_vertex_buffer(&trace[body.b_id as usize], &display, color_default);
+                   // disp.draw(&t_vert_buf, &index_buffer, &program, &uniforms, &Default::default()).unwrap();
                     
 
                     

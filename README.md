@@ -13,9 +13,14 @@ For performance related reasons, it is recommend to build the program in release
 
 ## Running
 
-To run the program, ensure that the `Sol.Json` file is located in the same folder as the program's executable.
+To run the program, ensure that the `Sol_Full.json` file is located in the same folder as the program's executable.
 
-## Modifying Sol.Json
+If you want to use another JSON file instead, place it in the same folder as the executable and pass its filename(extension included) as a command line argument to the executable
+
+`physicssim_rust.exe Example.json`
+
+
+## Modifying Sol_Full.json or using your own
 
 The bodies included in the default JSON can be replaced by any other orbital data, the JSON follows the following Format:
 

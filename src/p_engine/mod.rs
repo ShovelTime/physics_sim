@@ -1,5 +1,4 @@
 use crate::math::vec;
-use crate::math::phys::Phys;
 use crate::constants;
 
 #[derive(PartialEq, Clone)]
@@ -37,15 +36,15 @@ impl PEngine
         
         for bodies in self.world.get_body_list().iter() {
 
-            let accel1 = self.accel_loop(&bodies.position, &bodies.bID);
+            let accel1 = self.accel_loop(&bodies.position, &bodies.b_id);
             let new_pos = bodies.position + bodies.velocity * self.time_step + ((accel1 * self.time_step.powi(2)) / 2.0f64);
 
-            let accel2 = self.accel_loop(&new_pos, &bodies.bID);
+            let accel2 = self.accel_loop(&new_pos, &bodies.b_id);
             let new_vel = bodies.velocity + ((accel1 + accel2) / 2.0f64) * self.time_step;
 
             let new_body = Body
             {
-                bID : bodies.bID,
+                b_id : bodies.b_id,
                 name : bodies.name.clone(),
                 position : new_pos,
                 velocity : new_vel,
@@ -68,7 +67,7 @@ impl PEngine
 
         for tgt in self.world.get_body_list().iter() 
         {
-            if &tgt.bID == bid // dont perform calculations on itself.
+            if &tgt.b_id == bid // dont perform calculations on itself.
             {
                 continue;
             }
@@ -114,7 +113,7 @@ impl Default for PEngine
     {
         PEngine
         {
-            highlighted : 1,
+            highlighted : -1,
             bodycount : 0,
             timestamp : 0,
             simticks : 0,
@@ -178,7 +177,7 @@ impl World
 #[derive(Clone)]
 pub struct Body
 {
-    pub bID : i64,
+    pub b_id : i64,
     pub name : String,
     pub radius : f32,
     pub mass : f64,
